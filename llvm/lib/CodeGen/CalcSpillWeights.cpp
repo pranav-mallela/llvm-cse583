@@ -311,6 +311,10 @@ float VirtRegAuxInfo::weightCalcHelper(LiveInterval &LI, SlotIndex *Start,
     TotalWeight *= 1.01F;
   }
 
+  // Depending on the BEC analysis data, modify the total weight of the live interval:
+  // Boost the weight if there are more live bits (it is a critical interval). Reduce the weight if there are fewer live bits (it is a non-critical interval).
+  // TODO: Insert BEC data and weight modification logic here.
+
   // If the live interval was already unspillable, leave it that way.
   if (!IsSpillable)
     return -1.0;
