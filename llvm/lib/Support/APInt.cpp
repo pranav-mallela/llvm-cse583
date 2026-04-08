@@ -2249,6 +2249,57 @@ void APInt::toString(SmallVectorImpl<char> &Str, unsigned Radix,
   std::reverse(Str.begin()+StartDig, Str.end());
 }
 
+void APInt::toStringBits(SmallVectorImpl<char> &Str, unsigned Radix,
+                         bool Signed, bool formatAsCLiteral) const {
+  toString(Str, Radix, Signed, formatAsCLiteral);
+
+  SmallString<200> newStr;
+
+  // zext
+  for (unsigned i = Str.size(), e = getBitWidth()/4; i < e; i++) {
+    newStr.append("0000 ");
+  }
+
+  // convert hex to binary
+  for(unsigned i = 0, e = Str.size(); i < e; i++) {
+    char C = Str[i];
+    if (C == '0') {
+      newStr.append("0000 ");
+    } else if (C == '1') {
+      newStr.append("0001 ");
+    } else if (C == '2') {
+      newStr.append("0010 ");
+    } else if (C == '3') {
+      newStr.append("0011 ");
+    } else if (C == '4') {
+      newStr.append("0100 ");
+    } else if (C == '5') {
+      newStr.append("0101 ");
+    } else if (C == '6') {
+      newStr.append("0110 ");
+    } else if (C == '7') {
+      newStr.append("0111 ");
+    } else if (C == '8') {
+      newStr.append("1000 ");
+    } else if (C == '9') {
+      newStr.append("1001 ");
+    } else if (C == 'A') {
+      newStr.append("1010 ");
+    } else if (C == 'B') {
+      newStr.append("1011 ");
+    } else if (C == 'C') {
+      newStr.append("1100 ");
+    } else if (C == 'D') {
+      newStr.append("1101 ");
+    } else if (C == 'E') {
+      newStr.append("1110 ");
+    } else if (C == 'F') {
+      newStr.append("1111 ");
+    }
+  }
+  Str = newStr;
+}
+
 #if !defined(NDEBUG) || defined(LLVM_ENABLE_DUMP)
 LLVM_DUMP_METHOD void APInt::dump() const {
   SmallString<40> S, U;

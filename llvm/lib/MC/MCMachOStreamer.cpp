@@ -88,6 +88,8 @@ public:
 
   void changeSection(MCSection *Sect, const MCExpr *Subsect) override;
   void emitLabel(MCSymbol *Symbol, SMLoc Loc = SMLoc()) override;
+  void emitMFLiveIns(MachineFunction *MF, SMLoc Loc = SMLoc()) override {};
+  void emitMBBLiveIns(const MachineBasicBlock *MBB, SMLoc Loc = SMLoc()) override {};
   void emitAssignment(MCSymbol *Symbol, const MCExpr *Value) override;
   void emitEHSymAttributes(const MCSymbol *Symbol, MCSymbol *EHSymbol) override;
   void emitAssemblerFlag(MCAssemblerFlag Flag) override;

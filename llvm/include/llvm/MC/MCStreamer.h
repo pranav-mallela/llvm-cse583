@@ -17,6 +17,8 @@
 #include "llvm/ADT/DenseMap.h"
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringRef.h"
+#include "llvm/CodeGen/MachineBasicBlock.h"
+#include "llvm/CodeGen/MachineFunction.h"
 #include "llvm/MC/MCDirectives.h"
 #include "llvm/MC/MCDwarf.h"
 #include "llvm/MC/MCLinkerOptimizationHint.h"
@@ -102,6 +104,11 @@ public:
 
   // Allow a target to add behavior to the EmitLabel of MCStreamer.
   virtual void emitLabel(MCSymbol *Symbol);
+  // Emit LiveIns of MF
+  virtual void emitMFLiveIns(MachineFunction *MF, SMLoc Loc = SMLoc()) {}
+  // Emit LiveIns of MBB
+  virtual void emitMBBLiveIns(const MachineBasicBlock *MBB, SMLoc Loc = SMLoc()) {}
+
   // Allow a target to add behavior to the emitAssignment of MCStreamer.
   virtual void emitAssignment(MCSymbol *Symbol, const MCExpr *Value);
 
@@ -485,7 +492,10 @@ public:
   // FIXME: These emission are non-const because we mutate the symbol to
   // add the section we're emitting it to later.
   virtual void emitLabel(MCSymbol *Symbol, SMLoc Loc = SMLoc());
-
+  // Emit LiveIns of MF
+  virtual void emitMFLiveIns(MachineFunction *MF, SMLoc Loc = SMLoc()) {}
+  // Emit LiveIns of MBB
+  virtual void emitMBBLiveIns(const MachineBasicBlock *MBB, SMLoc Loc = SMLoc()) {}
   virtual void emitEHSymAttributes(const MCSymbol *Symbol, MCSymbol *EHSymbol);
 
   /// Note in the output the specified \p Flag.

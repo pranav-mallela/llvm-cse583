@@ -1644,6 +1644,11 @@ public:
     toString(Str, Radix, true, false);
   }
 
+  /// Converts an APInt to a string and append it to Str.  Str is commonly a
+  /// SmallString.
+  void toStringBits(SmallVectorImpl<char> &Str, unsigned Radix, bool Signed,
+                    bool formatAsCLiteral = false) const;
+
   /// \returns a byte-swapped representation of this APInt Value.
   APInt byteSwap() const;
 

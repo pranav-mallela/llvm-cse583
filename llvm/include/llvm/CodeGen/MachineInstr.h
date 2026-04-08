@@ -114,9 +114,32 @@ public:
                                         // this instruction.
   };
 
+  // Result index (RI) related variables.
+  // These values are set by RISCVPostRegAllocComputeFIPruningScore.cpp.
+  // Run RISCVPostRegAllocComputeFIPruningScore pass before the MC emission.
+
+  // List of registers accessed or live.
+  SmallVector<MCPhysReg> DefRegs;
+  SmallVector<MCPhysReg> UseRegs;
+  SmallVector<MCPhysReg> LiveRegsIn;
+  SmallVector<MCPhysReg> LiveRegsOut;
+
+  // List of registers defined and used per MachineOperands.
+  // These vars conveys MachineOperand-level info to the MC-level to be
+  // emitted on assembly.
+  SmallVector<MachineOperand*, 4> DefRegMOPs;
+  SmallVector<MachineOperand*, 4> UseRegMOPs;
+
+  // List of RIs assigned per MachineOperands.
+  // RIs(uint32_t) are paired with bit-position(uint8_t).
+  DenseMap<MachineOperand*, SmallVector<std::pair<uint8_t, uint32_t>, 4>> RIMap;
+
+
 private:
   const MCInstrDesc *MCID;              // Instruction descriptor.
   MachineBasicBlock *Parent = nullptr;  // Pointer to the owning basic block.
+
+  const Instruction *I = nullptr;       // LLVM-IR Instruction.
 
   // Operands are allocated by an ArrayRecycler.
   MachineOperand *Operands = nullptr;   // Pointer to the first operand.
@@ -1857,6 +1880,16 @@ public:
 
   /// Copy all flags to MachineInst MIFlags
   void copyIRFlags(const Instruction &I);
+
+  /// Set corresponding LLVM-IR instruction.
+  void setInstruction(const Instruction *Inst) {
+    I = Inst;
+  }
+
+  /// Return the corresponding LLVM-IR instruction.
+  const Instruction* getInstruction() const {
+    return I;
+  }
 
   /// Break any tie involving OpIdx.
   void untieRegOperand(unsigned OpIdx) {

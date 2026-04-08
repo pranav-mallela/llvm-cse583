@@ -49,6 +49,8 @@ public:
   void initSections(bool NoExecStack, const MCSubtargetInfo &STI) override;
   void changeSection(MCSection *Section, const MCExpr *Subsection) override;
   void emitLabel(MCSymbol *Symbol, SMLoc Loc = SMLoc()) override;
+  void emitMFLiveIns(MachineFunction *MF, SMLoc Loc = SMLoc()) override {}
+  void emitMBBLiveIns(const MachineBasicBlock *MBB, SMLoc Loc = SMLoc()) override {}
   void emitLabelAtPos(MCSymbol *Symbol, SMLoc Loc, MCFragment *F,
                       uint64_t Offset) override;
   void emitAssemblerFlag(MCAssemblerFlag Flag) override;

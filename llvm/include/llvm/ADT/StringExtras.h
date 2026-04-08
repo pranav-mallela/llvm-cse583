@@ -326,6 +326,13 @@ inline std::string toString(const APSInt &I, unsigned Radix) {
   return toString(I, Radix, I.isSigned());
 }
 
+inline std::string toStringBits(const APInt &I, unsigned Radix, bool Signed,
+                                bool formatAsCLiteral = false) {
+  SmallString<40> S;
+  I.toStringBits(S, Radix, Signed, formatAsCLiteral);
+  return std::string(S.str());
+}
+
 /// StrInStrNoCase - Portable version of strcasestr.  Locates the first
 /// occurrence of string 's1' in string 's2', ignoring case.  Returns
 /// the offset of s2 in s1 or npos if s2 cannot be found.

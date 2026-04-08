@@ -287,6 +287,19 @@ void PseudoLoweringEmitter::emitLoweringEmitter(raw_ostream &o) {
           << "      if (lowerOperand(MI->getOperand(i), MCOp))\n"
           << "        TmpInst.addOperand(MCOp);\n";
       }
+      // copy the AccessedRegs
+      o << "    for (MCPhysReg Reg : MI->DefRegs)\n"
+        << "      TmpInst.DefRegs.push_back(Reg);\n";
+      o << "\n";
+      o << "    for (MCPhysReg Reg : MI->UseRegs)\n"
+        << "      TmpInst.UseRegs.push_back(Reg);\n";
+      o << "\n";
+      o << "    for (MCPhysReg Reg : MI->LiveRegsIn)\n"
+        << "      TmpInst.LiveRegsIn.push_back(Reg);\n";
+      o << "\n";
+      o << "    for (MCPhysReg Reg : MI->LiveRegsOut)\n"
+        << "      TmpInst.LiveRegsOut.push_back(Reg);\n";
+      o << "\n";
       o << "    EmitToStreamer(OutStreamer, TmpInst);\n"
         << "    break;\n"
         << "  }\n";

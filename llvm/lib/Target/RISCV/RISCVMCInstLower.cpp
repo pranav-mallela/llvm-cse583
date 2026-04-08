@@ -215,6 +215,27 @@ static bool lowerRISCVVMachineInstrToMCInst(const MachineInstr *MI,
 
 bool llvm::lowerRISCVMachineInstrToMCInst(const MachineInstr *MI, MCInst &OutMI,
                                           AsmPrinter &AP) {
+  // copy the def register info.
+  for (MCPhysReg Reg : MI->DefRegs)
+    OutMI.DefRegs.push_back(Reg);
+  // copy the use register info.
+  for (MCPhysReg Reg : MI->UseRegs)
+    OutMI.UseRegs.push_back(Reg);
+  // copy the live register info.
+  for (MCPhysReg Reg : MI->LiveRegsIn)
+    OutMI.LiveRegsIn.push_back(Reg);
+  for (MCPhysReg Reg : MI->LiveRegsOut)
+    OutMI.LiveRegsOut.push_back(Reg);
+  // copy the DefRegMOPs
+  for (unsigned i = 0, e = MI->DefRegMOPs.size(); i < e; i++)
+    OutMI.DefRegMOPs.push_back(MI->DefRegMOPs[i]);
+  // copy the UseRegMOPs
+  for (unsigned i = 0, e = MI->UseRegMOPs.size(); i < e; i++)
+    OutMI.UseRegMOPs.push_back(MI->UseRegMOPs[i]);
+  // copy the RIMap
+  for (auto &V : MI->RIMap)
+    OutMI.RIMap[V.first] = V.second;
+
   if (lowerRISCVVMachineInstrToMCInst(MI, OutMI))
     return false;
 

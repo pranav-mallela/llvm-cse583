@@ -21,6 +21,7 @@
 #include "llvm/ADT/Statistic.h"
 #include "llvm/BinaryFormat/ELF.h"
 #include "llvm/CodeGen/AsmPrinter.h"
+#include "llvm/CodeGen/LivePhysRegs.h"
 #include "llvm/CodeGen/MachineConstantPool.h"
 #include "llvm/CodeGen/MachineFunctionPass.h"
 #include "llvm/CodeGen/MachineInstr.h"
@@ -58,6 +59,7 @@ public:
   bool runOnMachineFunction(MachineFunction &MF) override;
 
   void emitInstruction(const MachineInstr *MI) override;
+  void emitBasicBlockStart(const MachineBasicBlock &MBB) override;
 
   bool PrintAsmOperand(const MachineInstr *MI, unsigned OpNo,
                        const char *ExtraCode, raw_ostream &OS) override;
@@ -83,6 +85,9 @@ public:
 
   void emitFunctionEntryLabel() override;
 
+  // Set register liveness on MachineInstr to be passed on to MCInst.
+  void setRegLiveness();
+
 private:
   void emitAttributes();
 };
@@ -91,8 +96,24 @@ private:
 void RISCVAsmPrinter::EmitToStreamer(MCStreamer &S, const MCInst &Inst) {
   MCInst CInst;
   bool Res = RISCVRVC::compress(CInst, Inst, *STI);
-  if (Res)
+  if (Res) {
+    // copy the accessed/live register info.
+    for (MCPhysReg Reg : Inst.DefRegs)
+      CInst.DefRegs.push_back(Reg);
+    for (MCPhysReg Reg : Inst.UseRegs)
+      CInst.UseRegs.push_back(Reg);
+    for (MCPhysReg Reg : Inst.LiveRegsIn)
+      CInst.LiveRegsIn.push_back(Reg);
+    for (MCPhysReg Reg : Inst.LiveRegsOut)
+      CInst.LiveRegsOut.push_back(Reg);
+    for (unsigned i = 0, e = Inst.DefRegMOPs.size(); i < e; i++)
+      CInst.DefRegMOPs.push_back(Inst.DefRegMOPs[i]);
+    for (unsigned i = 0, e = Inst.UseRegMOPs.size(); i < e; i++)
+      CInst.UseRegMOPs.push_back(Inst.UseRegMOPs[i]);
+    for (auto &V : Inst.RIMap)
+      CInst.RIMap[V.first] = V.second;
     ++RISCVNumInstrsCompressed;
+  }
   AsmPrinter::EmitToStreamer(*OutStreamer, Res ? CInst : Inst);
 }
 
@@ -191,8 +212,76 @@ bool RISCVAsmPrinter::runOnMachineFunction(MachineFunction &MF) {
   STI = &MF.getSubtarget<RISCVSubtarget>();
 
   SetupMachineFunction(MF);
+  setRegLiveness();
   emitFunctionBody();
   return false;
+}
+
+void RISCVAsmPrinter::setRegLiveness() {
+  const TargetRegisterInfo *TRI = MF->getSubtarget().getRegisterInfo();
+  LivePhysRegs LiveRegs;
+  LiveRegs.init(*TRI);
+
+  for (auto &MBB : *MF) {
+    LiveRegs.clear();
+    LiveRegs.addLiveOuts(MBB);
+    //LiveRegs.addLiveOutsNoPristines(MBB);
+
+    MBB.clearAccessedRegs();
+
+    MachineBasicBlock::iterator I = MBB.end(), E = MBB.begin();
+    if (I == E) continue;
+    do {
+      --I;
+
+      // Add (implicit)def registers to DefRegs
+      I->DefRegs.clear();
+      for (const MachineOperand &MOP : phys_regs_and_masks(*I)) {
+        if (MOP.isRegMask()) {
+          for (MCPhysReg Reg : LiveRegs) {
+            if (MOP.clobbersPhysReg(Reg)) {
+              I->DefRegs.push_back(Reg);
+              MBB.addAccessedReg(Reg);
+            }
+          }
+          continue;
+        }
+        if (MOP.isDef()) {
+          I->DefRegs.push_back(MOP.getReg());
+          MBB.addAccessedReg(MOP.getReg());
+        }
+      }
+
+      // Add read registers to UseRegs
+      for (const MachineOperand &MOP : phys_regs_and_masks(*I)) {
+        if (!MOP.isReg() || !MOP.readsReg())
+          continue;
+        I->UseRegs.push_back(MOP.getReg());
+        MBB.addAccessedReg(MOP.getReg());
+      }
+
+      if (I->isReturn()) {
+        I->UseRegs.push_back(RISCV::X1);
+        MBB.addAccessedReg(RISCV::X1);
+      }
+
+      // Update LiveRegsOut
+      I->LiveRegsOut.clear();
+      for (MCPhysReg Reg : LiveRegs) {
+        I->LiveRegsOut.push_back(Reg);
+      }
+
+      // Progress backward
+      LiveRegs.stepBackward(*I);
+
+      // Update LiveRegsIn
+      I->LiveRegsIn.clear();
+      for (MCPhysReg Reg : LiveRegs) {
+        I->LiveRegsIn.push_back(Reg);
+      }
+
+    } while (I != E);
+  }
 }
 
 void RISCVAsmPrinter::emitStartOfAsmFile(Module &M) {
@@ -230,8 +319,15 @@ void RISCVAsmPrinter::emitFunctionEntryLabel() {
         static_cast<RISCVTargetStreamer &>(*OutStreamer->getTargetStreamer());
     RTS.emitDirectiveVariantCC(*CurrentFnSym);
   }
-  return AsmPrinter::emitFunctionEntryLabel();
+  AsmPrinter::emitFunctionEntryLabel();
+  OutStreamer->emitMFLiveIns(MF);
 }
+
+void RISCVAsmPrinter::emitBasicBlockStart(const MachineBasicBlock &MBB) {
+  AsmPrinter::emitBasicBlockStart(MBB);
+  OutStreamer->emitMBBLiveIns(&MBB);
+}
+
 
 // Force static initialization.
 extern "C" LLVM_EXTERNAL_VISIBILITY void LLVMInitializeRISCVAsmPrinter() {

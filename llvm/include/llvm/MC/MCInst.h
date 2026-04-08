@@ -18,6 +18,7 @@
 #include "llvm/ADT/SmallVector.h"
 #include "llvm/ADT/StringRef.h"
 #include "llvm/ADT/bit.h"
+#include "llvm/MC/MCRegisterInfo.h"
 #include "llvm/Support/SMLoc.h"
 #include <cassert>
 #include <cstddef>
@@ -30,6 +31,8 @@ class MCInst;
 class MCInstPrinter;
 class MCRegisterInfo;
 class raw_ostream;
+
+class MachineOperand;
 
 /// Instances of this class represent operands of the MCInst class.
 /// This is a simple discriminated union.
@@ -190,6 +193,20 @@ class MCInst {
 
   SMLoc Loc;
   SmallVector<MCOperand, 10> Operands;
+
+public:
+  // List of registers that are accessed (DefRegs, UseRegs) and
+  // live (LiveRegsIn, LiveRegsOut) per MCInst.
+  SmallVector<MCPhysReg, 8> DefRegs;
+  SmallVector<MCPhysReg, 8> UseRegs;
+  SmallVector<MCPhysReg, 8> LiveRegsIn;
+  SmallVector<MCPhysReg, 8> LiveRegsOut;
+
+  // Info passed from MachineInstr-level. See MachineInstr.h for more info.
+  SmallVector<MachineOperand*, 4> DefRegMOPs;
+  SmallVector<MachineOperand*, 4> UseRegMOPs;
+  DenseMap<MachineOperand*, SmallVector<std::pair<uint8_t, uint32_t>, 4>> RIMap;
+
 
 public:
   MCInst() = default;

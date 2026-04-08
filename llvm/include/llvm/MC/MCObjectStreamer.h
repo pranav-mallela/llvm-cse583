@@ -131,6 +131,8 @@ public:
   /// @{
 
   void emitLabel(MCSymbol *Symbol, SMLoc Loc = SMLoc()) override;
+  void emitMFLiveIns(MachineFunction *MF, SMLoc Loc = SMLoc()) override {}
+  void emitMBBLiveIns(const MachineBasicBlock *MBB, SMLoc Loc = SMLoc()) override {}
   virtual void emitLabelAtPos(MCSymbol *Symbol, SMLoc Loc, MCFragment *F,
                               uint64_t Offset);
   void emitAssignment(MCSymbol *Symbol, const MCExpr *Value) override;

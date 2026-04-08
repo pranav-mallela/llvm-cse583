@@ -182,6 +182,7 @@ void initializeInternalizeLegacyPassPass(PassRegistry&);
 void initializeIntervalPartitionPass(PassRegistry&);
 void initializeJMCInstrumenterPass(PassRegistry&);
 void initializeJumpThreadingPass(PassRegistry&);
+void initializePhysKnownBitsAnalysisWrapperPass(PassRegistry &);
 void initializeLCSSAVerificationPassPass(PassRegistry&);
 void initializeLCSSAWrapperPassPass(PassRegistry&);
 void initializeLazyBlockFrequencyInfoPassPass(PassRegistry&);

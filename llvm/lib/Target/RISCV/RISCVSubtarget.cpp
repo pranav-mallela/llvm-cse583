@@ -18,6 +18,7 @@
 #include "GISel/RISCVCallLowering.h"
 #include "GISel/RISCVLegalizerInfo.h"
 #include "GISel/RISCVRegisterBankInfo.h"
+#include "RISCVKnownBitsInfo.h"
 #include "llvm/MC/TargetRegistry.h"
 #include "llvm/Support/ErrorHandling.h"
 
@@ -82,7 +83,7 @@ RISCVSubtarget::RISCVSubtarget(const Triple &TT, StringRef CPU,
       RVVVectorBitsMin(RVVVectorBitsMin), RVVVectorBitsMax(RVVVectorBitsMax),
       FrameLowering(
           initializeSubtargetDependencies(TT, CPU, TuneCPU, FS, ABIName)),
-      InstrInfo(*this), RegInfo(getHwMode()), TLInfo(TM, *this) {
+      InstrInfo(*this), RegInfo(getHwMode()), TLInfo(TM, *this), TKBInfo(TM, *this) {
   if (RISCV::isX18ReservedByDefault(TT))
     UserReservedRegister.set(RISCV::X18);
 

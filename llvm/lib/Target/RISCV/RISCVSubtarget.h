@@ -17,6 +17,7 @@
 #include "RISCVFrameLowering.h"
 #include "RISCVISelLowering.h"
 #include "RISCVInstrInfo.h"
+#include "RISCVKnownBitsInfo.h"
 #include "llvm/CodeGen/GlobalISel/CallLowering.h"
 #include "llvm/CodeGen/GlobalISel/InstructionSelector.h"
 #include "llvm/CodeGen/GlobalISel/LegalizerInfo.h"
@@ -60,6 +61,7 @@ private:
   RISCVInstrInfo InstrInfo;
   RISCVRegisterInfo RegInfo;
   RISCVTargetLowering TLInfo;
+  RISCVKnownBitsInfo TKBInfo;
   SelectionDAGTargetInfo TSInfo;
 
   /// Initializes using the passed in CPU and feature strings so that we can
@@ -89,6 +91,9 @@ public:
   }
   const RISCVTargetLowering *getTargetLowering() const override {
     return &TLInfo;
+  }
+  const RISCVKnownBitsInfo *getTargetKnownBitsInfo() const override {
+    return &TKBInfo;
   }
   const SelectionDAGTargetInfo *getSelectionDAGInfo() const override {
     return &TSInfo;

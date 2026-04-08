@@ -47,6 +47,9 @@ add_llvm_target(RISCVCodeGen
   GISel/RISCVLegalizerInfo.cpp
   GISel/RISCVRegisterBankInfo.cpp
 
+  RISCVKnownBitsInfo.cpp
+  RISCVPostRAFaultIndexCoalescer.cpp
+
   LINK_COMPONENTS
   Analysis
   AsmPrinter

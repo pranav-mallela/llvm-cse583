@@ -24,12 +24,11 @@ struct KnownBits {
   APInt Zero;
   APInt One;
 
-private:
+public:
   // Internal constructor for creating a KnownBits from two APInts.
   KnownBits(APInt Zero, APInt One)
       : Zero(std::move(Zero)), One(std::move(One)) {}
 
-public:
   // Default construct Zero and One.
   KnownBits() = default;
 
@@ -90,6 +89,47 @@ public:
   void setAllOnes() {
     Zero.clearAllBits();
     One.setAllBits();
+  }
+
+  void setUnknown(unsigned BitPos) {
+    Zero.clearBit(BitPos);
+    One.clearBit(BitPos);
+  }
+
+  bool isUnknownBit(unsigned BitPos) {
+    return !Zero[BitPos] && !One[BitPos];
+  }
+
+  bool isUnknownBit(unsigned BitPos) const {
+    return !Zero[BitPos] && !One[BitPos];
+  }
+
+  bool isZeroBit(unsigned BitPos) {
+    assert(!hasConflict() && "KnownBits conflict!");
+    return Zero[BitPos];
+  }
+
+  bool isZeroBit(unsigned BitPos) const {
+    assert(!hasConflict() && "KnownBits conflict!");
+    return Zero[BitPos];
+  }
+
+  bool isOneBit(unsigned BitPos) {
+    assert(!hasConflict() && "KnownBits conflict!");
+    return One[BitPos];
+  }
+
+  bool isOneBit(unsigned BitPos) const {
+    assert(!hasConflict() && "KnownBits conflict!");
+    return One[BitPos];
+  }
+
+  /* return false if the bit is unknown */
+  bool flipABit(unsigned BitPos) {
+    if (isUnknownBit(BitPos)) return false;
+    One.flipBit(BitPos);
+    Zero.flipBit(BitPos);
+    return true;
   }
 
   /// Returns true if this value is known to be negative.

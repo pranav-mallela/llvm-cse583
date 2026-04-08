@@ -349,7 +349,9 @@ AsmPrinter::AsmPrinter(TargetMachine &tm, std::unique_ptr<MCStreamer> Streamer)
     : MachineFunctionPass(ID), TM(tm), MAI(tm.getMCAsmInfo()),
       OutContext(Streamer->getContext()), OutStreamer(std::move(Streamer)),
       SM(*this) {
-  VerboseAsm = OutStreamer->isVerboseAsm();
+  // Force to cleanup Asm outputs.
+  //VerboseAsm = OutStreamer->isVerboseAsm();
+  VerboseAsm = false;
   DwarfUsesRelocationsAcrossSections =
       MAI->doesDwarfUseRelocationsAcrossSections();
 }

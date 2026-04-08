@@ -572,6 +572,7 @@ uint16_t MachineInstr::copyFlagsFromInstruction(const Instruction &I) {
 
 void MachineInstr::copyIRFlags(const Instruction &I) {
   Flags = copyFlagsFromInstruction(I);
+  setInstruction(&I);
 }
 
 bool MachineInstr::hasPropertyInBundle(uint64_t Mask, QueryType Type) const {

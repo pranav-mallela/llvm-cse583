@@ -47,6 +47,7 @@ class SelectionDAGTargetInfo;
 class SUnit;
 class TargetFrameLowering;
 class TargetInstrInfo;
+class TargetKnownBitsInfo;
 class TargetLowering;
 class TargetRegisterClass;
 class TargetRegisterInfo;
@@ -97,6 +98,9 @@ public:
     return nullptr;
   }
   virtual const TargetLowering *getTargetLowering() const { return nullptr; }
+  virtual const TargetKnownBitsInfo *getTargetKnownBitsInfo() const {
+    return nullptr;
+  }
   virtual const SelectionDAGTargetInfo *getSelectionDAGInfo() const {
     return nullptr;
   }

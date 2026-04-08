@@ -224,6 +224,8 @@ add_llvm_component_library(LLVMCodeGen
   TailDuplicator.cpp
   TargetFrameLoweringImpl.cpp
   TargetInstrInfo.cpp
+  TargetKnownBitsInfo.cpp
+  PhysKnownBitsAnalysis.cpp
   TargetLoweringBase.cpp
   TargetLoweringObjectFileImpl.cpp
   TargetOptionsImpl.cpp

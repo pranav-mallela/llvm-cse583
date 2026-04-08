@@ -63,6 +63,10 @@ public:
     }
   };
 
+  // FIXME: make it private.
+  /// Map for proper DefMOPs for physical registers.
+  DenseMap<MachineOperand*, SmallVector<MachineOperand*, 4>> DefMOPMap;
+
 private:
   MachineFunction *MF;
   SmallPtrSet<Delegate *, 1> TheDelegates;

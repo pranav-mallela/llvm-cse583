@@ -9,6 +9,9 @@
 #include "llvm/ADT/SmallString.h"
 #include "llvm/ADT/StringExtras.h"
 #include "llvm/ADT/Twine.h"
+#include "llvm/CodeGen/MachineBasicBlock.h"
+#include "llvm/CodeGen/MachineFunction.h"
+#include "llvm/CodeGen/MachineRegisterInfo.h"
 #include "llvm/DebugInfo/CodeView/SymbolRecord.h"
 #include "llvm/MC/MCAsmBackend.h"
 #include "llvm/MC/MCAsmInfo.h"
@@ -157,6 +160,8 @@ public:
   }
 
   void emitLabel(MCSymbol *Symbol, SMLoc Loc = SMLoc()) override;
+  void emitMFLiveIns(MachineFunction *MF, SMLoc Loc = SMLoc()) override;
+  void emitMBBLiveIns(const MachineBasicBlock *MBB, SMLoc Loc = SMLoc()) override;
 
   void emitAssemblerFlag(MCAssemblerFlag Flag) override;
   void emitLinkerOptions(ArrayRef<std::string> Options) override;
@@ -532,6 +537,38 @@ void MCAsmStreamer::emitLabel(MCSymbol *Symbol, SMLoc Loc) {
   OS << MAI->getLabelSuffix();
 
   EmitEOL();
+}
+
+void MCAsmStreamer::emitMFLiveIns(MachineFunction *MF, SMLoc Loc) {
+  MachineRegisterInfo *RegInfo = &MF->getRegInfo();
+
+  OS << "# MFLiveIns:";
+  if (RegInfo && !RegInfo->livein_empty()) {
+    for (MachineRegisterInfo::livein_iterator
+         I = RegInfo->livein_begin(), E = RegInfo->livein_end(); I != E; ++I) {
+      OS << " ";
+      InstPrinter->printRegName(OS, I->first);
+    }
+  }
+  OS << '\n';
+}
+
+void MCAsmStreamer::emitMBBLiveIns(const MachineBasicBlock *MBB, SMLoc Loc) {
+  OS << "  ## MBBLiveIns:";
+  if (!MBB->livein_empty()) {
+    for (const auto &LI : make_range(MBB->livein_begin_dbg(), MBB->livein_end())) {
+      OS << " ";
+      InstPrinter->printRegName(OS, LI.PhysReg);
+    }
+  }
+  OS << '\n';
+
+  OS << "  ## MBBAccessed:";
+  for (unsigned i = 0, e = MBB->getAccessedRegsSize(); i < e; i++) {
+    OS << " ";
+    InstPrinter->printRegName(OS, MBB->getAccessedRegs(i));
+  }
+  OS << '\n';
 }
 
 void MCAsmStreamer::emitLOHDirective(MCLOHType Kind, const MCLOHArgs &Args) {
@@ -2310,6 +2347,66 @@ void MCAsmStreamer::emitInstruction(const MCInst &Inst,
   assert(getCurrentSectionOnly() &&
          "Cannot emit contents before setting section!");
 
+  //** Value-level static analysis **//
+  // Dump Def Regs/Use Regs/Live Regs per instruction
+  // list live registers in comment
+  OS << "\t# Defs:";
+  for (MCPhysReg Reg : Inst.DefRegs) {
+    OS << " ";
+    InstPrinter->printRegName(OS, Reg);
+  }
+  OS << "\n";
+  OS << "\t# Uses:";
+  for (MCPhysReg Reg : Inst.UseRegs) {
+    OS << " ";
+    InstPrinter->printRegName(OS, Reg);
+  }
+  OS << "\n";
+  OS << "\t# LiveIn:";
+  for (MCPhysReg Reg : Inst.LiveRegsIn) {
+    OS << " ";
+    InstPrinter->printRegName(OS, Reg);
+  }
+  OS << "\n";
+  OS << "\t# LiveOut:";
+  for (MCPhysReg Reg : Inst.LiveRegsOut) {
+    OS << " ";
+    InstPrinter->printRegName(OS, Reg);
+  }
+  OS << "\n";
+
+  //** Bit-level static analysis **//
+  // Defs
+  for (unsigned i = 0, e = Inst.DefRegMOPs.size(); i < e; i++) {
+    MachineOperand *defMOP = Inst.DefRegMOPs[i];
+    OS << "\t# DefMOP: ";
+    InstPrinter->printRegName(OS, defMOP->getReg());
+    OS << ": ";
+    assert(Inst.RIMap.find(defMOP) != Inst.RIMap.end()
+           && " defMOP not found in RIMap");
+    SmallVector<std::pair<uint8_t, uint32_t>, 4> defRIMap = Inst.RIMap.lookup(defMOP);
+    for (unsigned j = 0, je = defRIMap.size(); j < je; j++) {
+      assert(defRIMap[j].first == j && "Incomplete RIMapf or defMOP");
+      OS << defRIMap[j].second << " ";
+    }
+    OS << "\n";
+  }
+  // Uses
+  for (unsigned i = 0, e = Inst.UseRegMOPs.size(); i < e; i++) {
+    MachineOperand *useMOP = Inst.UseRegMOPs[i];
+    OS << "\t# UseMOP: ";
+    InstPrinter->printRegName(OS, useMOP->getReg());
+    OS << ": ";
+    assert(Inst.RIMap.find(useMOP) != Inst.RIMap.end()
+           && " useMOP not found in RIMap");
+    SmallVector<std::pair<uint8_t, uint32_t>, 4> useRIMap = Inst.RIMap.lookup(useMOP);
+    for (unsigned j = 0, je = useRIMap.size(); j < je; j++) {
+      assert(useRIMap[j].first == j && "Incomplete RIMapf or defMOP");
+      OS << useRIMap[j].second << " ";
+    }
+    OS << "\n";
+  }
+
   if (!MAI->usesDwarfFileAndLocDirectives())
     // Now that a machine instruction has been assembled into this section, make
     // a line entry for any .loc directive that has been seen.
@@ -2329,11 +2426,15 @@ void MCAsmStreamer::emitInstruction(const MCInst &Inst,
   else
     InstPrinter->printInst(&Inst, 0, "", STI, OS);
 
+  // Disable any other comments than live registers.
+  /*
   StringRef Comments = CommentToEmit;
   if (Comments.size() && Comments.back() != '\n')
     getCommentOS() << "\n";
 
   EmitEOL();
+  */
+  OS << "\n";
 }
 
 void MCAsmStreamer::emitPseudoProbe(

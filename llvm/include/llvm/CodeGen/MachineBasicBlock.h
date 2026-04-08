@@ -132,6 +132,9 @@ private:
   using LiveInVector = std::vector<RegisterMaskPair>;
   LiveInVector LiveIns;
 
+  /// Keep track of the physical registers that are livein of the MBB.
+  SmallVector<MCPhysReg, 8> AccessedRegs;
+
   /// Alignment of the basic block. One if the basic block does not need to be
   /// aligned.
   Align Alignment;
@@ -411,6 +414,42 @@ public:
   }
   void addLiveIn(const RegisterMaskPair &RegMaskPair) {
     LiveIns.push_back(RegMaskPair);
+  }
+
+  void clearAccessedRegs() {
+    AccessedRegs.clear();
+  }
+
+  void addAccessedReg(MCPhysReg PhysReg) {
+    bool found = false;
+    for (unsigned i = 0, e = AccessedRegs.size(); i < e; i++) {
+      if (AccessedRegs[i] == PhysReg) {
+        found = true;
+        break;
+      }
+    }
+
+    if (!found) {
+      AccessedRegs.push_back(PhysReg);
+    }
+  }
+
+  unsigned getAccessedRegsSize() {
+    return AccessedRegs.size();
+  }
+
+  MCPhysReg getAccessedRegs(unsigned index) {
+    assert (index < AccessedRegs.size() && "index out of bound");
+    return AccessedRegs[index];
+  }
+
+  unsigned getAccessedRegsSize() const {
+    return AccessedRegs.size();
+  }
+
+  MCPhysReg getAccessedRegs(unsigned index) const {
+    assert (index < AccessedRegs.size() && "index out of bound");
+    return AccessedRegs[index];
   }
 
   /// Sorts and uniques the LiveIns vector. It can be significantly faster to do
