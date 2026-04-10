@@ -1,29 +1,13 @@
 --- |
-  ; ModuleID = '../samples/loop_test.ll'
-  source_filename = "../samples/loop_test.c"
+  ; ModuleID = '../samples/years.ll'
+  source_filename = "../samples/years.c"
   target datalayout = "e-m:e-p:64:64-i64:64-i128:128-n32:64-S128"
   target triple = "riscv64"
   
   ; Function Attrs: nofree norecurse nosync nounwind memory(none)
-  define dso_local signext i32 @loop_test(i32 noundef signext %n) local_unnamed_addr #0 {
+  define dso_local signext i32 @countYears() local_unnamed_addr #0 {
   entry:
-    %cmp4 = icmp sgt i32 %n, 0
-    br i1 %cmp4, label %for.body.preheader, label %for.cond.cleanup
-  
-  for.body.preheader:                               ; preds = %entry
-    br label %for.body
-  
-  for.cond.cleanup:                                 ; preds = %for.body, %entry
-    %sum.0.lcssa = phi i32 [ 0, %entry ], [ %xor, %for.body ]
-    ret i32 %sum.0.lcssa
-  
-  for.body:                                         ; preds = %for.body.preheader, %for.body
-    %i.06 = phi i32 [ %inc, %for.body ], [ 0, %for.body.preheader ]
-    %sum.05 = phi i32 [ %xor, %for.body ], [ 0, %for.body.preheader ]
-    %xor = xor i32 %i.06, %sum.05
-    %inc = add nuw nsw i32 %i.06, 1
-    %exitcond.not = icmp eq i32 %n, %inc
-    br i1 %exitcond.not, label %for.cond.cleanup, label %for.body, !llvm.loop !4
+    ret i32 2
   }
   
   attributes #0 = { nofree norecurse nosync nounwind memory(none) "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="generic-rv64" "target-features"="+64bit,+a,+c,+m,+relax,-d,-e,-experimental-zawrs,-experimental-zca,-experimental-zcd,-experimental-zcf,-experimental-zihintntl,-experimental-ztso,-experimental-zvfh,-f,-h,-save-restore,-svinval,-svnapot,-svpbmt,-v,-xtheadvdot,-xventanacondops,-zba,-zbb,-zbc,-zbkb,-zbkc,-zbkx,-zbs,-zdinx,-zfh,-zfhmin,-zfinx,-zhinx,-zhinxmin,-zicbom,-zicbop,-zicboz,-zihintpause,-zk,-zkn,-zknd,-zkne,-zknh,-zkr,-zks,-zksed,-zksh,-zkt,-zmmul,-zve32f,-zve32x,-zve64d,-zve64f,-zve64x,-zvl1024b,-zvl128b,-zvl16384b,-zvl2048b,-zvl256b,-zvl32768b,-zvl32b,-zvl4096b,-zvl512b,-zvl64b,-zvl65536b,-zvl8192b" }
@@ -35,12 +19,10 @@
   !1 = !{i32 1, !"target-abi", !"lp64"}
   !2 = !{i32 1, !"SmallDataLimit", i32 8}
   !3 = !{!"clang version 16.0.0 (https://github.com/pranav-mallela/llvm-cse583.git eba74dd0affffe0079b40f774de0dc1a80bd8509)"}
-  !4 = distinct !{!4, !5}
-  !5 = !{!"llvm.loop.mustprogress"}
 
 ...
 ---
-name:            loop_test
+name:            countYears
 alignment:       2
 exposesReturnsTwice: false
 legalized:       false
@@ -58,8 +40,7 @@ debugInstrRef:   false
 failsVerification: false
 tracksDebugUserValues: true
 registers:       []
-liveins:
-  - { reg: '$x10', virtual-reg: '' }
+liveins:         []
 frameInfo:
   isFrameAddressTaken: false
   isReturnAddressTaken: false
@@ -91,38 +72,7 @@ machineFunctionInfo:
   varArgsSaveSize: 0
 body:             |
   bb.0.entry:
-    successors: %bb.2(0x50000000), %bb.1(0x30000000)
-    liveins: $x10
-  
-    BLT $x0, renamable $x10, %bb.2
-  
-  bb.1:
-    successors: %bb.3(0x80000000)
-  
-    renamable $x11 = COPY $x0
-    PseudoBR %bb.3
-  
-  bb.2.for.body.preheader:
-    successors: %bb.4(0x80000000)
-    liveins: $x10
-  
-    renamable $x12 = COPY $x0
-    renamable $x11 = COPY $x0
-    PseudoBR %bb.4
-  
-  bb.3.for.cond.cleanup:
-    liveins: $x11
-  
-    $x10 = COPY killed renamable $x11
-    PseudoRET implicit $x10
-  
-  bb.4.for.body:
-    successors: %bb.3(0x04000000), %bb.4(0x7c000000)
-    liveins: $x10, $x11, $x12
-  
-    renamable $x11 = XOR renamable $x12, killed renamable $x11
-    renamable $x12 = ADDIW killed renamable $x12, 1
-    BEQ renamable $x10, renamable $x12, %bb.3
-    PseudoBR %bb.4
+    $x10 = ADDI $x0, 2
+    PseudoRET implicit killed $x10
 
 ...

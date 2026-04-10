@@ -315,6 +315,10 @@ bool RISCVPostRAFaultIndexCoalescer::runOnMachineFunction(MachineFunction &MF) {
     }
   }
 
+  dbgs() << "\n--- BEC FAULT INDEX MAP FOR FUNCTION: " << MF.getName() << " ---\n";
+  dumpFIResMap(MF);
+  dbgs() << "--- END OF MAP ---\n\n";
+
   // Update MachineInstr with FIResMap
   updateMIs(MF);
 
