@@ -19,6 +19,11 @@
 #include "llvm/CodeGen/MachineBranchProbabilityInfo.h"
 #include "llvm/CodeGen/MachineLoopInfo.h"
 #include "llvm/Support/BlockFrequency.h"
+// >>> Change: Adding header file to create custom output stream
+#include "llvm/Support/FileSystem.h"
+#include "llvm/Support/raw_ostream.h"
+#include "llvm/Support/Path.h"
+// >>>
 #include <optional>
 
 using namespace llvm;
@@ -1602,14 +1607,53 @@ void RISCVPostRAFaultIndexCoalescer::dumpDefMOPMap(MachineFunction &MF) {
 }
 
 void RISCVPostRAFaultIndexCoalescer::dumpFIResMap(MachineFunction &MF) {
+  // >>> Change: Creating custom output stream
+  SmallString<128> MapPath("../fault-index-map/fault_index_map.txt");
+
+  // Get just the directory part ("../fault_map")
+  StringRef ParentDir = sys::path::parent_path(MapPath);
+
+  // Create the directory if it doesn't exist
+  if (!ParentDir.empty()) {
+      std::error_code EC_Dir = sys::fs::create_directories(ParentDir);
+      if (EC_Dir) {
+          errs() << "Could not create directory: " << EC_Dir.message() << "\n";
+      }
+  } 
+  std::error_code EC;
+  raw_fd_ostream MapFile(MapPath, EC, sys::fs::OF_Append); // Use OF_Append if running multiple times
+  if (EC) {
+    errs() << "Error opening file: " << EC.message() << "\n";
+    return;
+  }
+  // >>>
   for (auto &MBB : MF) {
     dbgs() << MBB.getFullName() << "\n";
+    // >>> Change: initialize mbb, mi idx to store in reliability map
+    unsigned mbb_idx = MBB.getNumber(); // Get the unique ID for the block
+    unsigned mi_idx = 0;
+    // >>>
     for (MachineInstr &MI : MBB) {
       if (MI.isDebugInstr()) continue;
       MI.dump();
       unsigned mop_idx = 0;
       for (auto &MOP : MI.operands()) {
         if (FIResMap.find(&MOP) != FIResMap.end()) {
+          // >>> Change: print mbb, mi, mop idx as debug info
+          if (!EC) {
+              // FORMAT: BB_ID,MI_ID,MOP_ID | BIT:VAL,BIT:VAL...
+              MapFile << "BEC_DATA:" << mbb_idx << "," << mi_idx << "," << mop_idx << "|";
+              for(unsigned i = 0, e = FIResMap[&MOP].size(); i < e; i++){
+                MapFile << (uint32_t)FIResMap[&MOP][i].first << ":" << FIResMap[&MOP][i].second;
+                if(i!=e-1){
+                  MapFile << ",";
+                }
+              }
+              MapFile << "\n";
+          } else {
+              errs() << "Could not open fault map file: " << EC.message() << "\n";
+          }
+          // >>>
           dbgs() << "  FIResMap MOP[idx="<<mop_idx<<"]: " << printReg(MOP.getReg(), TRI) <<"\t:\n";
           unsigned prev_ri = 0;
           for (unsigned i = 0, e = FIResMap[&MOP].size(); i < e; i++) {
@@ -1631,6 +1675,7 @@ void RISCVPostRAFaultIndexCoalescer::dumpFIResMap(MachineFunction &MF) {
         }
         mop_idx++;
       }
+      mi_idx++;
     }
   }
 }

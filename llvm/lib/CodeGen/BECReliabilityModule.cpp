@@ -5,68 +5,95 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-//
-// BECReliabilityModule class
-// Attribute to store FIResMap
-// Function to run BEC pass to generate FIResMap and store it in a fixed file path
-// Function to read FIResMap from fixed file path
-// Function to calculate unique fault indices given machine operand
-
-// For Reliability-Aware Register Allocation
-// Import this module in CalcSpillWeights.cpp (FIResMap has the operands for an entire machine function)
-// Use it in weightCalcHelper()
-
-//
-//===----------------------------------------------------------------------===//
 
 #include "llvm/CodeGen/BECReliabilityModule.h"
-#include "llvm/ADT/SmallPtrSet.h"
-#include "llvm/CodeGen/LiveInterval.h"
-#include "llvm/CodeGen/LiveIntervals.h"
-#include "llvm/CodeGen/MachineFunction.h"
-#include "llvm/CodeGen/MachineInstr.h"
-#include "llvm/CodeGen/MachineLoopInfo.h"
-#include "llvm/CodeGen/MachineOperand.h"
-#include "llvm/CodeGen/MachineRegisterInfo.h"
-#include "llvm/CodeGen/StackMaps.h"
-#include "llvm/CodeGen/TargetInstrInfo.h"
-#include "llvm/CodeGen/TargetRegisterInfo.h"
-#include "llvm/CodeGen/TargetSubtargetInfo.h"
-#include "llvm/CodeGen/VirtRegMap.h"
-#include "llvm/Support/Debug.h"
-#include "llvm/Support/FileSystem.h"
 #include "llvm/Support/MemoryBuffer.h"
+#include "llvm/Support/raw_ostream.h"
+#include "llvm/Support/Debug.h"   // For LLVM_DEBUG and dbgs()
 #include <set>
 
 using namespace llvm;
 
 #define DEBUG_TYPE "becreliabilitymodule"
 
-unsigned BECReliabilityModule::BitFaultMap::countUniqueIDs() const {
-    std::set<unsigned> UniqueIDs;
-    for (unsigned id : BitIndices) {
-        UniqueIDs.insert(id);
+BECReliabilityModule::BECReliabilityModule(std::string Path)
+    : FaultIndexMapPath(std::move(Path)) {}
+
+bool BECReliabilityModule::loadMap() {
+  // 1. Read the file into a buffer
+  auto BufferOrErr = MemoryBuffer::getFile(FaultIndexMapPath);
+  if (!BufferOrErr) {
+    LLVM_DEBUG(dbgs() << "BEC Module: Could not open " << FaultIndexMapPath << "\n");
+    return false;
+  }
+
+  StringRef Content = BufferOrErr.get()->getBuffer();
+  SmallVector<StringRef, 16> Lines;
+  Content.split(Lines, '\n');
+
+  for (StringRef Line : Lines) {
+    Line = Line.trim();
+    if (Line.empty() || !Line.startswith("BEC_DATA:"))
+      continue;
+
+    // Line format: BEC_DATA:mbb,mi,mop|bit:val,bit:val,
+    // Split key and values
+    auto MainSplit = Line.drop_front(9).split('|');
+    StringRef Key = MainSplit.first;    // "0,5,2"
+    StringRef Values = MainSplit.second; // "0:1,63:64,"
+
+    FIResTy Entries;
+    SmallVector<StringRef, 8> PairStrings;
+    Values.split(PairStrings, ',', -1, false);
+
+    for (StringRef PairStr : PairStrings) {
+      if (PairStr.empty()) continue;
+      
+      auto BitVal = PairStr.split(':');
+      unsigned BitPos, FaultIdx;
+      
+      if (!BitVal.first.getAsInteger(10, BitPos) && 
+          !BitVal.second.getAsInteger(10, FaultIdx)) {
+        Entries.push_back({(uint8_t)BitPos, (uint32_t)FaultIdx});
+      }
     }
-    return UniqueIDs.size();
+
+    ReliabilityMap[Key] = Entries;
+  }
+
+  LLVM_DEBUG(dbgs() << "BEC Module: Loaded " << ReliabilityMap.size() << " entries.\n");
+  return true;
 }
 
-bool BECReliabilityModule::loadMap(StringRef FilePath) {
-    // 1. Read the file into a buffer
-    auto BufferOrErr = MemoryBuffer::getFile(FilePath);
-    if (!BufferOrErr) return false;
+unsigned BECReliabilityModule::getUniqueBitIDCount(unsigned BB, unsigned MI, unsigned MOP) const {
+  // Construct the key: "BB,MI,MOP"
+  std::string Key = std::to_string(BB) + "," + std::to_string(MI) + "," + std::to_string(MOP);
+  
+  auto It = ReliabilityMap.find(Key);
+  if (It == ReliabilityMap.end())
+    return 0;
 
-    StringRef Content = BufferOrErr.get()->getBuffer();
-    
-    // 2. TODO: Implement your parsing logic here 
-    // You will iterate through 'Content' line by line, 
-    // find the Function name, Instruction, and LSB/MSB indices.
-    
-    return true;
+  const FIResTy &Entries = It->second;
+  if (Entries.empty())
+    return 0;
+
+  // Use a set to count unique fault indices across the register bits
+  std::set<uint32_t> UniqueIDs;
+  for (const auto &Pair : Entries) {
+    UniqueIDs.insert(Pair.second);
+  }
+  
+  return UniqueIDs.size();
 }
 
-float BECReliabilityModule::getReliabilityFactor(const MachineInstr &MI, unsigned OpIdx) const {
-    // 3. Logic to match the 'MI' to your internal Map
-    // You'll likely use the instruction's position or SlotIndex
-    return 1.0f; // Default multiplier
-}
+float BECReliabilityModule::getReliabilityFactor(unsigned BB, unsigned MI, unsigned MOP) const {
+  unsigned UniqueIDs = getUniqueBitIDCount(BB, MI, MOP);
+  
+  if (UniqueIDs == 0)
+    return 1.0f;
 
+  // Example heuristic: Increase weight based on how many unique fault regions 
+  // are packed into this register. More unique IDs = higher vulnerability.
+  // 1.0 + (UniqueIDs / 64.0) gives a scale between 1.0 and 2.0 for a 64-bit reg.
+  return 1.0f + (static_cast<float>(UniqueIDs) / 64.0f);
+}
