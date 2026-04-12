@@ -5,7 +5,9 @@
 // SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
-
+// >>> Change: Insert Reliability Module Header files
+#include "llvm/CodeGen/BECReliabilityModule.h"
+// >>>
 #include "llvm/CodeGen/CalcSpillWeights.h"
 #include "llvm/ADT/SmallPtrSet.h"
 #include "llvm/CodeGen/LiveInterval.h"
@@ -270,6 +272,37 @@ float VirtRegAuxInfo::weightCalcHelper(LiveInterval &LI, SlotIndex *Start,
     volatile float HWeight = Hint[HintReg] += Weight;
     if (HintReg.isVirtual() || MRI.isAllocatable(HintReg))
       CopyHints.insert(CopyHint(HintReg, HWeight));
+    
+    // Depending on the BEC analysis data, modify the total weight of the live interval
+    // More unique fault indices = higher vulnerability = lesser spill weight.
+    // TODO: Insert BEC data and weight modification logic here.
+    static BECReliabilityModule BECMod;
+    if(BECMod.isEmpty()){
+      BECMod.loadMap();
+    }
+    MachineBasicBlock *mbb = MI->getParent();
+    unsigned mbb_idx = mbb->getNumber();
+    unsigned mi_idx = 0;
+    for(MachineInstr &mi : *mbb){
+      // find the correct MI and MOP
+      if(mi.isDebugInstr()) continue;
+      if(&mi == MI) break;
+      mi_idx++;
+    }
+
+    unsigned mop_idx = 0;
+    for(unsigned i = 0, e = MI->getNumOperands(); i < e; i++){
+      const MachineOperand &mo = MI->getOperand(i);
+      // li.reg is the virtual register that the allocator is currently processing
+      if (mo.isReg() && mo.getReg() == LI.reg()) { 
+          mop_idx = i;
+          break; 
+      }
+    }
+
+    // get BEC weight (0 to 1)
+    float BEC_Weight = BECMod.getReliabilityFactor(mbb_idx, mi_idx, mop_idx);
+    TotalWeight += BEC_Weight;
   }
 
   // Pass all the sorted copy hints to mri.
@@ -309,10 +342,6 @@ float VirtRegAuxInfo::weightCalcHelper(LiveInterval &LI, SlotIndex *Start,
     LI.markNotSpillable();
     return -1.0;
   }
-
-  // Depending on the BEC analysis data, modify the total weight of the live interval:
-  // Boost the weight if there are more live bits (it is a critical interval). Reduce the weight if there are fewer live bits (it is a non-critical interval).
-  // TODO: Insert BEC data and weight modification logic here.
   
   // If all of the definitions of the interval are re-materializable,
   // it is a preferred candidate for spilling.

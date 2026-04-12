@@ -90,10 +90,11 @@ float BECReliabilityModule::getReliabilityFactor(unsigned BB, unsigned MI, unsig
   unsigned UniqueIDs = getUniqueBitIDCount(BB, MI, MOP);
   
   if (UniqueIDs == 0)
-    return 1.0f;
+    return 0.0f;
 
-  // Example heuristic: Increase weight based on how many unique fault regions 
-  // are packed into this register. More unique IDs = higher vulnerability.
-  // 1.0 + (UniqueIDs / 64.0) gives a scale between 1.0 and 2.0 for a 64-bit reg.
-  return 1.0f + (static_cast<float>(UniqueIDs) / 64.0f);
+  // Example heuristic: Modify weight based on how many unique fault regions 
+  // are packed into this register. More unique IDs = higher vulnerability = lesser spill weight.
+  // We try to spill high vulnerability variables as they are safer in memory.
+  // 1.0 - (UniqueIDs / 64.0) gives a scale between 0.0 and 1.0 for a 64-bit reg.
+  return 1.0f - (static_cast<float>(UniqueIDs) / 64.0f);
 }

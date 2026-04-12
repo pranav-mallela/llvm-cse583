@@ -29,6 +29,7 @@ add_llvm_component_library(LLVMCodeGen
   AssignmentTrackingAnalysis.cpp
   AtomicExpandPass.cpp
   BasicTargetTransformInfo.cpp
+  BECReliabilityModule.cpp
   BranchFolding.cpp
   BranchRelaxation.cpp
   BreakFalseDeps.cpp
@@ -233,6 +234,7 @@ add_llvm_component_library(LLVMCodeGen
   TargetRegisterInfo.cpp
   TargetSchedule.cpp
   TargetSubtargetInfo.cpp
+  TestBECReliabilityModule.cpp
   TwoAddressInstructionPass.cpp
   TypePromotion.cpp
   UnreachableBlockElim.cpp

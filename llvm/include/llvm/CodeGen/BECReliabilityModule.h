@@ -54,6 +54,9 @@ public:
 
   // Clear the map (useful if processing multiple functions or re-loading)
   void clear() { ReliabilityMap.clear(); }
+
+  // Check if the map is empty
+  bool isEmpty() { return ReliabilityMap.empty(); }
 };
 
 } // end namespace llvm
