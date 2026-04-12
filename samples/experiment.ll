@@ -6,15 +6,6 @@ target triple = "riscv64"
 ; Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn memory(none)
 define dso_local signext i32 @experiment(i32 noundef signext %volatile_input) local_unnamed_addr #0 {
 entry:
-  %shl = shl i32 %volatile_input, 2
-  %xor = and i32 %shl, -252645136
-  %and = xor i32 %xor, 1347440720
-  ret i32 %and
-}
-
-; Function Attrs: mustprogress nofree norecurse nosync nounwind willreturn memory(none)
-define dso_local signext i32 @experiment1(i32 noundef signext %volatile_input) local_unnamed_addr #0 {
-entry:
   %shr1 = lshr i32 %volatile_input, 2
   %xor = and i32 %shr1, 1
   %and = xor i32 %xor, 1
@@ -29,4 +20,4 @@ attributes #0 = { mustprogress nofree norecurse nosync nounwind willreturn memor
 !0 = !{i32 1, !"wchar_size", i32 4}
 !1 = !{i32 1, !"target-abi", !"lp64"}
 !2 = !{i32 1, !"SmallDataLimit", i32 8}
-!3 = !{!"clang version 16.0.0 (git@github.com:pranav-mallela/llvm-cse583.git 4475d62f4bf591b9d988f8be6affd10b945cb937)"}
+!3 = !{!"clang version 16.0.0 (git@github.com:pranav-mallela/llvm-cse583.git 5c42f9491cd257d1a2431f939b49d47618c51f7e)"}

@@ -1621,7 +1621,7 @@ void RISCVPostRAFaultIndexCoalescer::dumpFIResMap(MachineFunction &MF) {
       }
   } 
   std::error_code EC;
-  raw_fd_ostream MapFile(MapPath, EC, sys::fs::OF_Append); // Use OF_Append if running multiple times
+  raw_fd_ostream MapFile(MapPath, EC, sys::fs::OF_None); // Use OF_Append if running multiple times, OF_None to overwrite
   if (EC) {
     errs() << "Error opening file: " << EC.message() << "\n";
     return;
