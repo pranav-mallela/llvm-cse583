@@ -5,3 +5,9 @@ int experiment(int volatile_input) {
     int b = a ^ 0x1; 
     return b & 0x1;
 }
+
+int main() {
+    int input = 12; // Example input
+    int result = experiment(input);
+    return 0;
+}
