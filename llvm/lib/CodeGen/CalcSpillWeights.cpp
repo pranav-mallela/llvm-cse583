@@ -213,6 +213,9 @@ float VirtRegAuxInfo::weightCalcHelper(LiveInterval &LI, SlotIndex *Start,
 
   std::set<CopyHint> CopyHints;
   DenseMap<unsigned, float> Hint;
+  // >>> Change: Initialize LastKnownBECWeight to 0.0f
+  float LastKnownBECWeight = 0.0f;
+  // >>>
   for (MachineRegisterInfo::reg_instr_nodbg_iterator
            I = MRI.reg_instr_nodbg_begin(LI.reg()),
            E = MRI.reg_instr_nodbg_end();
@@ -275,34 +278,60 @@ float VirtRegAuxInfo::weightCalcHelper(LiveInterval &LI, SlotIndex *Start,
     
     // Depending on the BEC analysis data, modify the total weight of the live interval
     // More unique fault indices = higher vulnerability = lesser spill weight.
-    // TODO: Insert BEC data and weight modification logic here.
     static BECReliabilityModule BECMod;
     if(BECMod.isEmpty()){
-      BECMod.loadMap();
+      bool loaded = BECMod.loadMap();
+      llvm::errs() << "BEC reliability map loaded: " << (loaded ? "Success" : "Failure") << "\n";
     }
     MachineBasicBlock *mbb = MI->getParent();
-    unsigned mbb_idx = mbb->getNumber();
-    unsigned mi_idx = 0;
-    for(MachineInstr &mi : *mbb){
-      // find the correct MI and MOP
-      if(mi.isDebugInstr()) continue;
-      if(&mi == MI) break;
-      mi_idx++;
-    }
+    // unsigned mbb_idx = mbb->getNumber();
+    // unsigned mi_idx = 0;
+    // for(MachineInstr &mi : *mbb){
+    //   // find the correct MI and MOP
+    //   if(mi.isDebugInstr()) continue;
+    //   if(&mi == MI) break;
+    //   mi_idx++;
+    // }
 
-    unsigned mop_idx = 0;
-    for(unsigned i = 0, e = MI->getNumOperands(); i < e; i++){
-      const MachineOperand &mo = MI->getOperand(i);
-      // li.reg is the virtual register that the allocator is currently processing
-      if (mo.isReg() && mo.getReg() == LI.reg()) { 
-          mop_idx = i;
-          break; 
-      }
-    }
+    // unsigned mop_idx = 0;
+    // for(unsigned i = 0, e = MI->getNumOperands(); i < e; i++){
+    //   const MachineOperand &mo = MI->getOperand(i);
+    //   // li.reg is the virtual register that the allocator is currently processing
+    //   if (mo.isReg() && mo.getReg() == LI.reg()) { 
+    //       mop_idx = i;
+    //       break; 
+    //   }
+    // }
 
     // get BEC weight (0 to 1)
-    float BEC_Weight = BECMod.getReliabilityFactor(mbb_idx, mi_idx, mop_idx);
+    DebugLoc DL = MI->getDebugLoc();
+    float BEC_Weight = 0.0f;
+    unsigned Line = 0, Col = 0;
+    if(DL){
+      Line = DL.getLine();
+      Col = DL.getCol();
+      BEC_Weight = BECMod.getReliabilityFactor(Line, Col);
+      LastKnownBECWeight = BEC_Weight;
+    }
+    else{
+      BEC_Weight = LastKnownBECWeight;
+    }
     TotalWeight += BEC_Weight;
+
+    // Ignore main function debug prints as main function is not loaded into BEC map
+    if(mbb->getParent()->getName() == "main"){
+      continue;
+    }
+
+    LLVM_DEBUG({
+      dbgs() << "BEC Reliability Calculation:\n"
+            << "  Function: " << mbb->getParent()->getName() << "\n"
+            << "  Location: " << Line << "," << Col << "\n"
+            << "  Reg: " << printReg(LI.reg(), mbb->getParent()->getSubtarget().getRegisterInfo()) << "\n"
+            << "  BEC Weight Contribution: " << BEC_Weight << "\n"
+            << "  New TotalWeight: " << TotalWeight << "\n"
+            << "  Machine Instruction: "; MI->dump();
+    });
   }
 
   // Pass all the sorted copy hints to mri.

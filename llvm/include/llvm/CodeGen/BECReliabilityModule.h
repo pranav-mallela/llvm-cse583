@@ -29,7 +29,7 @@ public:
    * @param Path Path to the generated fault map file. 
    * Defaults to the relative path from the build directory.
    */
-  BECReliabilityModule(std::string Path = "../fault_map/fault_map.txt");
+  BECReliabilityModule(std::string Path = "../fault-index-map/fault_index_map.txt");
 
   /**
    * Parses the BEC_DATA lines from the text file into the ReliabilityMap.
@@ -44,13 +44,13 @@ public:
    * @param MOP Operand index
    * @return A float multiplier (e.g., 1.0 + (unique_bits / 64.0))
    */
-  float getReliabilityFactor(unsigned BB, unsigned MI, unsigned MOP) const;
+  float getReliabilityFactor(unsigned Line, unsigned Col) const;
 
   /**
    * Helper to count unique fault indices for a specific operand.
    * Useful for the weight calculation logic.
    */
-  unsigned getUniqueBitIDCount(unsigned BB, unsigned MI, unsigned MOP) const;
+  float getUniqueBitIDCountNormalized(unsigned Line, unsigned Col) const;
 
   // Clear the map (useful if processing multiple functions or re-loading)
   void clear() { ReliabilityMap.clear(); }

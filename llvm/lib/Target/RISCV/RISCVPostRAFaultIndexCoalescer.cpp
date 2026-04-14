@@ -320,9 +320,12 @@ bool RISCVPostRAFaultIndexCoalescer::runOnMachineFunction(MachineFunction &MF) {
     }
   }
 
-  dbgs() << "\n--- BEC FAULT INDEX MAP FOR FUNCTION: " << MF.getName() << " ---\n";
-  dumpFIResMap(MF);
-  dbgs() << "--- END OF MAP ---\n\n";
+  StringRef FuncName = MF.getName();
+  if(FuncName != "main"){
+    dbgs() << "\n--- BEC FAULT INDEX MAP FOR FUNCTION: " << MF.getName() << " ---\n";
+    dumpFIResMap(MF);
+    dbgs() << "--- END OF MAP ---\n\n";
+  }
 
   // Update MachineInstr with FIResMap
   updateMIs(MF);
@@ -1636,48 +1639,68 @@ void RISCVPostRAFaultIndexCoalescer::dumpFIResMap(MachineFunction &MF) {
     for (MachineInstr &MI : MBB) {
       if (MI.isDebugInstr()) continue;
       MI.dump();
+      DebugLoc DL = MI.getDebugLoc();
       unsigned mop_idx = 0;
       for (auto &MOP : MI.operands()) {
         if (FIResMap.find(&MOP) != FIResMap.end()) {
           // >>> Change: print mbb, mi, mop idx as debug info
-          if (!EC) {
-              // FORMAT: BB_ID,MI_ID,MOP_ID | BIT:VAL,BIT:VAL...
-              MapFile << "BEC_DATA:" << mbb_idx << "," << mi_idx << "," << mop_idx << "|";
-              for(unsigned i = 0, e = FIResMap[&MOP].size(); i < e; i++){
-                MapFile << (uint32_t)FIResMap[&MOP][i].first << ":" << FIResMap[&MOP][i].second;
-                if(i!=e-1){
-                  MapFile << ",";
-                }
-              }
-              MapFile << "\n";
-          } else {
-              errs() << "Could not open fault map file: " << EC.message() << "\n";
-          }
-          // >>>
-          dbgs() << "  FIResMap MOP[idx="<<mop_idx<<"]: " << printReg(MOP.getReg(), TRI) <<"\t:\n";
-          unsigned prev_ri = 0;
-          for (unsigned i = 0, e = FIResMap[&MOP].size(); i < e; i++) {
-            if (i == 0) {
-              dbgs() << "    LSB";
-              dbgs() << "[" << (uint32_t)FIResMap[&MOP][i].first << "]: " << FIResMap[&MOP][i].second << "\n";
-            } else if (i == e-1) {
-              dbgs() << "    MSB";
-              dbgs() << "[" << (uint32_t)FIResMap[&MOP][i].first << "]: " << FIResMap[&MOP][i].second << "\n";
-            } else {
-              if (!(prev_ri +1 == FIResMap[&MOP][i].second)) {
-              dbgs() << "       ";
-              dbgs() << "[" << (uint32_t)FIResMap[&MOP][i].first << "]: " << FIResMap[&MOP][i].second << "\n";
+          // if (!EC) {
+          //     // FORMAT: BB_ID,MI_ID,MOP_ID | BIT:VAL,BIT:VAL...
+          //     MapFile << "BEC_DATA:" << mbb_idx << "," << mi_idx << "," << mop_idx << "|";
+          //     for(unsigned i = 0, e = FIResMap[&MOP].size(); i < e; i++){
+          //       MapFile << (uint32_t)FIResMap[&MOP][i].first << ":" << FIResMap[&MOP][i].second;
+          //       if(i!=e-1){
+          //         MapFile << ",";
+          //       }
+          //     }
+          //     MapFile << "\n";
+          // } else {
+          //     errs() << "Could not open fault map file: " << EC.message() << "\n";
+          // }
+          if(!EC && DL){
+            unsigned Line = DL.getLine();
+            unsigned Col = DL.getCol();
+            std::string FuncName = MF.getName().str();
+
+            MapFile << "BEC_DATA:" << Line << "," << Col << "|";
+            for(unsigned i = 0, e = FIResMap[&MOP].size(); i < e; i++){
+              MapFile << (uint32_t)FIResMap[&MOP][i].first << ":" << FIResMap[&MOP][i].second;
+              if(i!=e-1){
+                MapFile << ",";
               }
             }
-            prev_ri = FIResMap[&MOP][i].second;
+            MapFile << "\n";
           }
-          dbgs() << "\n";
+          else {
+            errs() << "EC Message: " << EC.message() << " DebugLoc: " << DL << "\n";
+          }
+          // >>>
+          // dbgs() << "  FIResMap MOP[idx="<<mop_idx<<"]: " << printReg(MOP.getReg(), TRI) <<"\t:\n";
+          // unsigned prev_ri = 0;
+          // for (unsigned i = 0, e = FIResMap[&MOP].size(); i < e; i++) {
+          //   if (i == 0) {
+          //     dbgs() << "    LSB";
+          //     dbgs() << "[" << (uint32_t)FIResMap[&MOP][i].first << "]: " << FIResMap[&MOP][i].second << "\n";
+          //   } else if (i == e-1) {
+          //     dbgs() << "    MSB";
+          //     dbgs() << "[" << (uint32_t)FIResMap[&MOP][i].first << "]: " << FIResMap[&MOP][i].second << "\n";
+          //   } else {
+          //     if (!(prev_ri +1 == FIResMap[&MOP][i].second)) {
+          //     dbgs() << "       ";
+          //     dbgs() << "[" << (uint32_t)FIResMap[&MOP][i].first << "]: " << FIResMap[&MOP][i].second << "\n";
+          //     }
+          //   }
+          //   prev_ri = FIResMap[&MOP][i].second;
+          // }
+          // dbgs() << "\n";
         }
         mop_idx++;
       }
       mi_idx++;
     }
   }
+  MapFile.flush();
+  MapFile.close();
 }
 
 __attribute__((unused))

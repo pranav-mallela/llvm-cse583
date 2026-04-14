@@ -22,10 +22,11 @@ BECReliabilityModule::BECReliabilityModule(std::string Path)
 bool BECReliabilityModule::loadMap() {
   // 1. Read the file into a buffer
   auto BufferOrErr = MemoryBuffer::getFile(FaultIndexMapPath);
-  if (!BufferOrErr) {
-    LLVM_DEBUG(dbgs() << "BEC Module: Could not open " << FaultIndexMapPath << "\n");
+  if (std::error_code EC = BufferOrErr.getError()) {
+    llvm::errs() << "BEC Module Error (" << EC.value() << "): " << EC.message() << "\n";
+    llvm::errs() << "Attempted path: " << FaultIndexMapPath << "\n";
     return false;
-  }
+}
 
   StringRef Content = BufferOrErr.get()->getBuffer();
   SmallVector<StringRef, 16> Lines;
@@ -36,10 +37,10 @@ bool BECReliabilityModule::loadMap() {
     if (Line.empty() || !Line.startswith("BEC_DATA:"))
       continue;
 
-    // Line format: BEC_DATA:mbb,mi,mop|bit:val,bit:val,
+    // Line format: BEC_DATA:line,col|bit:val,bit:val,
     // Split key and values
     auto MainSplit = Line.drop_front(9).split('|');
-    StringRef Key = MainSplit.first;    // "0,5,2"
+    StringRef Key = MainSplit.first;    // "0,5"
     StringRef Values = MainSplit.second; // "0:1,63:64,"
 
     FIResTy Entries;
@@ -58,16 +59,19 @@ bool BECReliabilityModule::loadMap() {
       }
     }
 
-    ReliabilityMap[Key] = Entries;
+    // Append to existing entries for the same key instead of overwriting
+    ReliabilityMap[Key].insert(ReliabilityMap[Key].end(), 
+                               Entries.begin(), Entries.end());
   }
 
-  LLVM_DEBUG(dbgs() << "BEC Module: Loaded " << ReliabilityMap.size() << " entries.\n");
+  llvm::errs() << "BEC Module: Loaded " << ReliabilityMap.size() << " entries.\n";
   return true;
 }
 
-unsigned BECReliabilityModule::getUniqueBitIDCount(unsigned BB, unsigned MI, unsigned MOP) const {
-  // Construct the key: "BB,MI,MOP"
-  std::string Key = std::to_string(BB) + "," + std::to_string(MI) + "," + std::to_string(MOP);
+float BECReliabilityModule::getUniqueBitIDCountNormalized(unsigned Line, unsigned Col) const {
+  // Construct the key: "line,column"
+  std::string Key = std::to_string(Line) + "," + std::to_string(Col);
+
   
   auto It = ReliabilityMap.find(Key);
   if (It == ReliabilityMap.end())
@@ -83,18 +87,22 @@ unsigned BECReliabilityModule::getUniqueBitIDCount(unsigned BB, unsigned MI, uns
     UniqueIDs.insert(Pair.second);
   }
   
-  return UniqueIDs.size();
+  unsigned totalValues = Entries.size();
+
+  return static_cast<float>(UniqueIDs.size()) / static_cast<float>(totalValues);
 }
 
-float BECReliabilityModule::getReliabilityFactor(unsigned BB, unsigned MI, unsigned MOP) const {
-  unsigned UniqueIDs = getUniqueBitIDCount(BB, MI, MOP);
-  
-  if (UniqueIDs == 0)
+float BECReliabilityModule::getReliabilityFactor(unsigned Line, unsigned Col) const {
+  float normalized_UniqueIDs = getUniqueBitIDCountNormalized(Line, Col);
+  llvm::errs() << "Calculating BEC Reliability Factor for Line: " << Line 
+                    << ", Col: " << Col 
+                    << " => Unique Fault IDs: " << normalized_UniqueIDs << "\n";
+  if (normalized_UniqueIDs == 0)
     return 0.0f;
 
   // Example heuristic: Modify weight based on how many unique fault regions 
   // are packed into this register. More unique IDs = higher vulnerability = lesser spill weight.
   // We try to spill high vulnerability variables as they are safer in memory.
   // 1.0 - (UniqueIDs / 64.0) gives a scale between 0.0 and 1.0 for a 64-bit reg.
-  return 1.0f - (static_cast<float>(UniqueIDs) / 64.0f);
+  return 1.0f - normalized_UniqueIDs;
 }
