@@ -322,9 +322,9 @@ bool RISCVPostRAFaultIndexCoalescer::runOnMachineFunction(MachineFunction &MF) {
 
   StringRef FuncName = MF.getName();
   if(FuncName != "main"){
-    dbgs() << "\n--- BEC FAULT INDEX MAP FOR FUNCTION: " << MF.getName() << " ---\n";
+    // dbgs() << "\n--- BEC FAULT INDEX MAP FOR FUNCTION: " << MF.getName() << " ---\n";
     dumpFIResMap(MF);
-    dbgs() << "--- END OF MAP ---\n\n";
+    // dbgs() << "--- END OF MAP ---\n\n";
   }
 
   // Update MachineInstr with FIResMap
@@ -1631,14 +1631,14 @@ void RISCVPostRAFaultIndexCoalescer::dumpFIResMap(MachineFunction &MF) {
   }
   // >>>
   for (auto &MBB : MF) {
-    dbgs() << MBB.getFullName() << "\n";
+    // dbgs() << MBB.getFullName() << "\n";
     // >>> Change: initialize mbb, mi idx to store in reliability map
     unsigned mbb_idx = MBB.getNumber(); // Get the unique ID for the block
     unsigned mi_idx = 0;
     // >>>
     for (MachineInstr &MI : MBB) {
       if (MI.isDebugInstr()) continue;
-      MI.dump();
+      // MI.dump();
       DebugLoc DL = MI.getDebugLoc();
       unsigned mop_idx = 0;
       for (auto &MOP : MI.operands()) {
@@ -1672,7 +1672,12 @@ void RISCVPostRAFaultIndexCoalescer::dumpFIResMap(MachineFunction &MF) {
             MapFile << "\n";
           }
           else {
-            errs() << "EC Message: " << EC.message() << " DebugLoc: " << DL << "\n";
+            if(EC){
+              errs() << "EC Message: " << EC.message() << "\n";
+            }
+            if(!DL){
+              errs() << "DebugLoc is not available for this instruction " << MI;
+            }
           }
           // >>>
           // dbgs() << "  FIResMap MOP[idx="<<mop_idx<<"]: " << printReg(MOP.getReg(), TRI) <<"\t:\n";

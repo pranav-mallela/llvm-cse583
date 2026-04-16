@@ -75,11 +75,11 @@ float BECReliabilityModule::getUniqueBitIDCountNormalized(unsigned Line, unsigne
   
   auto It = ReliabilityMap.find(Key);
   if (It == ReliabilityMap.end())
-    return 0;
+    return -1; // Indicate no data available for this operand
 
   const FIResTy &Entries = It->second;
   if (Entries.empty())
-    return 0;
+    return -1; // Indicate no data available for this operand
 
   // Use a set to count unique fault indices across the register bits
   std::set<uint32_t> UniqueIDs;
@@ -96,8 +96,8 @@ float BECReliabilityModule::getReliabilityFactor(unsigned Line, unsigned Col) co
   float normalized_UniqueIDs = getUniqueBitIDCountNormalized(Line, Col);
   llvm::errs() << "Calculating BEC Reliability Factor for Line: " << Line 
                     << ", Col: " << Col 
-                    << " => Unique Fault IDs: " << normalized_UniqueIDs << "\n";
-  if (normalized_UniqueIDs == 0)
+                    << "\n=> Normalized Unique IDs (0 - 1): " << normalized_UniqueIDs << "\n";
+  if (normalized_UniqueIDs == -1)
     return 0.0f;
 
   // Example heuristic: Modify weight based on how many unique fault regions 

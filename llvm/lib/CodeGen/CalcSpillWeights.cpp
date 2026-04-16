@@ -280,8 +280,8 @@ float VirtRegAuxInfo::weightCalcHelper(LiveInterval &LI, SlotIndex *Start,
     // More unique fault indices = higher vulnerability = lesser spill weight.
     static BECReliabilityModule BECMod;
     if(BECMod.isEmpty()){
-      bool loaded = BECMod.loadMap();
-      llvm::errs() << "BEC reliability map loaded: " << (loaded ? "Success" : "Failure") << "\n";
+      BECMod.loadMap();
+      // llvm::errs() << "BEC reliability map loaded: " << (loaded ? "Success" : "Failure") << "\n";
     }
     MachineBasicBlock *mbb = MI->getParent();
     // unsigned mbb_idx = mbb->getNumber();
