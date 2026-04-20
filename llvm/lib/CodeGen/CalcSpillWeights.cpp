@@ -314,25 +314,23 @@ float VirtRegAuxInfo::weightCalcHelper(LiveInterval &LI, SlotIndex *Start,
       LastKnownBECWeight = BEC_Weight;
     }
     else{
-      errs() << "CalcSpillWeights: DebugLoc is not available for this instruction " << *MI;
+      // dbgs() << "CalcSpillWeights: DebugLoc is not available for this instruction " << *MI;
       BEC_Weight = LastKnownBECWeight;
     }
     TotalWeight += BEC_Weight;
 
     // Ignore main function debug prints as main function is not loaded into BEC map
-    if(mbb->getParent()->getName() == "main"){
+    if(mbb->getParent()->getName() == "main" || (Line == 0 && Col == 0)){
       continue;
     }
 
-    LLVM_DEBUG({
-      dbgs() << "BEC Reliability Calculation:\n"
+      errs() << "BEC Reliability Calculation:\n"
             << "  Function: " << mbb->getParent()->getName() << "\n"
             << "  Location: " << Line << "," << Col << "\n"
             << "  Reg: " << printReg(LI.reg(), mbb->getParent()->getSubtarget().getRegisterInfo()) << "\n"
             << "  BEC Weight Contribution: " << BEC_Weight << "\n"
             << "  New TotalWeight: " << TotalWeight << "\n"
             << "  Machine Instruction: "; MI->dump();
-    });
   }
 
   // Pass all the sorted copy hints to mri.

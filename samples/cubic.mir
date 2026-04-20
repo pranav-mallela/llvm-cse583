@@ -1,0 +1,615 @@
+--- |
+  ; ModuleID = '../samples/cubic.ll'
+  source_filename = "../samples/cubic.c"
+  target datalayout = "e-m:e-p:64:64-i64:64-i128:128-n32:64-S128"
+  target triple = "riscv64"
+  
+  @g_a = dso_local global i32 1, align 4, !dbg !0
+  @g_b = dso_local global i32 -10, align 4, !dbg !5
+  @g_c = dso_local global i32 31, align 4, !dbg !9
+  @g_d = dso_local global i32 -30, align 4, !dbg !11
+  @sink_solutions = dso_local global i32 0, align 4, !dbg !13
+  @sink_x0 = dso_local global i32 0, align 4, !dbg !15
+  @sink_x1 = dso_local global i32 0, align 4, !dbg !17
+  @sink_x2 = dso_local global i32 0, align 4, !dbg !19
+  
+  ; Function Attrs: noinline nounwind optnone
+  define dso_local void @SolveCubicInt(i32 noundef signext %a, i32 noundef signext %b, i32 noundef signext %c, i32 noundef signext %d, ptr noundef %solutions, ptr noundef %x) #0 !dbg !28 {
+  entry:
+    %a.addr = alloca i32, align 4
+    %b.addr = alloca i32, align 4
+    %c.addr = alloca i32, align 4
+    %d.addr = alloca i32, align 4
+    %solutions.addr = alloca ptr, align 8
+    %x.addr = alloca ptr, align 8
+    %count = alloca i32, align 4
+    %r = alloca i32, align 4
+    %val = alloca i32, align 4
+    store i32 %a, ptr %a.addr, align 4
+    call void @llvm.dbg.declare(metadata ptr %a.addr, metadata !33, metadata !DIExpression()), !dbg !34
+    store i32 %b, ptr %b.addr, align 4
+    call void @llvm.dbg.declare(metadata ptr %b.addr, metadata !35, metadata !DIExpression()), !dbg !36
+    store i32 %c, ptr %c.addr, align 4
+    call void @llvm.dbg.declare(metadata ptr %c.addr, metadata !37, metadata !DIExpression()), !dbg !38
+    store i32 %d, ptr %d.addr, align 4
+    call void @llvm.dbg.declare(metadata ptr %d.addr, metadata !39, metadata !DIExpression()), !dbg !40
+    store ptr %solutions, ptr %solutions.addr, align 8
+    call void @llvm.dbg.declare(metadata ptr %solutions.addr, metadata !41, metadata !DIExpression()), !dbg !42
+    store ptr %x, ptr %x.addr, align 8
+    call void @llvm.dbg.declare(metadata ptr %x.addr, metadata !43, metadata !DIExpression()), !dbg !44
+    call void @llvm.dbg.declare(metadata ptr %count, metadata !45, metadata !DIExpression()), !dbg !46
+    store i32 0, ptr %count, align 4, !dbg !46
+    call void @llvm.dbg.declare(metadata ptr %r, metadata !47, metadata !DIExpression()), !dbg !48
+    store i32 -20, ptr %r, align 4, !dbg !49
+    br label %for.cond, !dbg !51
+  
+  for.cond:                                         ; preds = %for.inc, %entry
+    %0 = load i32, ptr %r, align 4, !dbg !52
+    %cmp = icmp sle i32 %0, 20, !dbg !54
+    br i1 %cmp, label %for.body, label %for.end, !dbg !55
+  
+  for.body:                                         ; preds = %for.cond
+    call void @llvm.dbg.declare(metadata ptr %val, metadata !56, metadata !DIExpression()), !dbg !58
+    %1 = load i32, ptr %a.addr, align 4, !dbg !59
+    %2 = load i32, ptr %r, align 4, !dbg !60
+    %mul = mul nsw i32 %1, %2, !dbg !61
+    %3 = load i32, ptr %r, align 4, !dbg !62
+    %mul1 = mul nsw i32 %mul, %3, !dbg !63
+    %4 = load i32, ptr %r, align 4, !dbg !64
+    %mul2 = mul nsw i32 %mul1, %4, !dbg !65
+    %5 = load i32, ptr %b.addr, align 4, !dbg !66
+    %6 = load i32, ptr %r, align 4, !dbg !67
+    %mul3 = mul nsw i32 %5, %6, !dbg !68
+    %7 = load i32, ptr %r, align 4, !dbg !69
+    %mul4 = mul nsw i32 %mul3, %7, !dbg !70
+    %add = add nsw i32 %mul2, %mul4, !dbg !71
+    %8 = load i32, ptr %c.addr, align 4, !dbg !72
+    %9 = load i32, ptr %r, align 4, !dbg !73
+    %mul5 = mul nsw i32 %8, %9, !dbg !74
+    %add6 = add nsw i32 %add, %mul5, !dbg !75
+    %10 = load i32, ptr %d.addr, align 4, !dbg !76
+    %add7 = add nsw i32 %add6, %10, !dbg !77
+    store i32 %add7, ptr %val, align 4, !dbg !58
+    %11 = load i32, ptr %val, align 4, !dbg !78
+    %cmp8 = icmp eq i32 %11, 0, !dbg !80
+    br i1 %cmp8, label %if.then, label %if.end11, !dbg !81
+  
+  if.then:                                          ; preds = %for.body
+    %12 = load i32, ptr %count, align 4, !dbg !82
+    %cmp9 = icmp slt i32 %12, 3, !dbg !85
+    br i1 %cmp9, label %if.then10, label %if.end, !dbg !86
+  
+  if.then10:                                        ; preds = %if.then
+    %13 = load i32, ptr %r, align 4, !dbg !87
+    %14 = load ptr, ptr %x.addr, align 8, !dbg !89
+    %15 = load i32, ptr %count, align 4, !dbg !90
+    %idxprom = sext i32 %15 to i64, !dbg !89
+    %arrayidx = getelementptr inbounds i32, ptr %14, i64 %idxprom, !dbg !89
+    store i32 %13, ptr %arrayidx, align 4, !dbg !91
+    br label %if.end, !dbg !92
+  
+  if.end:                                           ; preds = %if.then10, %if.then
+    %16 = load i32, ptr %count, align 4, !dbg !93
+    %inc = add nsw i32 %16, 1, !dbg !93
+    store i32 %inc, ptr %count, align 4, !dbg !93
+    br label %if.end11, !dbg !94
+  
+  if.end11:                                         ; preds = %if.end, %for.body
+    br label %for.inc, !dbg !95
+  
+  for.inc:                                          ; preds = %if.end11
+    %17 = load i32, ptr %r, align 4, !dbg !96
+    %inc12 = add nsw i32 %17, 1, !dbg !96
+    store i32 %inc12, ptr %r, align 4, !dbg !96
+    br label %for.cond, !dbg !97, !llvm.loop !98
+  
+  for.end:                                          ; preds = %for.cond
+    %18 = load i32, ptr %count, align 4, !dbg !101
+    %19 = load ptr, ptr %solutions.addr, align 8, !dbg !102
+    store i32 %18, ptr %19, align 4, !dbg !103
+    br label %while.cond, !dbg !104
+  
+  while.cond:                                       ; preds = %while.body, %for.end
+    %20 = load i32, ptr %count, align 4, !dbg !105
+    %cmp13 = icmp slt i32 %20, 3, !dbg !106
+    br i1 %cmp13, label %while.body, label %while.end, !dbg !104
+  
+  while.body:                                       ; preds = %while.cond
+    %21 = load ptr, ptr %x.addr, align 8, !dbg !107
+    %22 = load i32, ptr %count, align 4, !dbg !109
+    %idxprom14 = sext i32 %22 to i64, !dbg !107
+    %arrayidx15 = getelementptr inbounds i32, ptr %21, i64 %idxprom14, !dbg !107
+    store i32 0, ptr %arrayidx15, align 4, !dbg !110
+    %23 = load i32, ptr %count, align 4, !dbg !111
+    %inc16 = add nsw i32 %23, 1, !dbg !111
+    store i32 %inc16, ptr %count, align 4, !dbg !111
+    br label %while.cond, !dbg !104, !llvm.loop !112
+  
+  while.end:                                        ; preds = %while.cond
+    ret void, !dbg !114
+  }
+  
+  ; Function Attrs: nocallback nofree nosync nounwind speculatable willreturn memory(none)
+  declare void @llvm.dbg.declare(metadata, metadata, metadata) #1
+  
+  ; Function Attrs: noinline nounwind optnone
+  define dso_local signext i32 @main() #0 !dbg !115 {
+  entry:
+    %retval = alloca i32, align 4
+    %x = alloca [3 x i32], align 4
+    %solutions = alloca i32, align 4
+    store i32 0, ptr %retval, align 4
+    call void @llvm.dbg.declare(metadata ptr %x, metadata !118, metadata !DIExpression()), !dbg !122
+    call void @llvm.dbg.declare(metadata ptr %solutions, metadata !123, metadata !DIExpression()), !dbg !124
+    %0 = load volatile i32, ptr @g_a, align 4, !dbg !125
+    %1 = load volatile i32, ptr @g_b, align 4, !dbg !126
+    %2 = load volatile i32, ptr @g_c, align 4, !dbg !127
+    %3 = load volatile i32, ptr @g_d, align 4, !dbg !128
+    %arraydecay = getelementptr inbounds [3 x i32], ptr %x, i64 0, i64 0, !dbg !129
+    call void @SolveCubicInt(i32 noundef signext %0, i32 noundef signext %1, i32 noundef signext %2, i32 noundef signext %3, ptr noundef %solutions, ptr noundef %arraydecay), !dbg !130
+    %4 = load i32, ptr %solutions, align 4, !dbg !131
+    store volatile i32 %4, ptr @sink_solutions, align 4, !dbg !132
+    %arrayidx = getelementptr inbounds [3 x i32], ptr %x, i64 0, i64 0, !dbg !133
+    %5 = load i32, ptr %arrayidx, align 4, !dbg !133
+    store volatile i32 %5, ptr @sink_x0, align 4, !dbg !134
+    %arrayidx1 = getelementptr inbounds [3 x i32], ptr %x, i64 0, i64 1, !dbg !135
+    %6 = load i32, ptr %arrayidx1, align 4, !dbg !135
+    store volatile i32 %6, ptr @sink_x1, align 4, !dbg !136
+    %arrayidx2 = getelementptr inbounds [3 x i32], ptr %x, i64 0, i64 2, !dbg !137
+    %7 = load i32, ptr %arrayidx2, align 4, !dbg !137
+    store volatile i32 %7, ptr @sink_x2, align 4, !dbg !138
+    ret i32 0, !dbg !139
+  }
+  
+  attributes #0 = { noinline nounwind optnone "frame-pointer"="all" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="generic-rv64" "target-features"="+64bit,+a,+c,+m,+relax,-d,-e,-experimental-zawrs,-experimental-zca,-experimental-zcd,-experimental-zcf,-experimental-zihintntl,-experimental-ztso,-experimental-zvfh,-f,-h,-save-restore,-svinval,-svnapot,-svpbmt,-v,-xtheadvdot,-xventanacondops,-zba,-zbb,-zbc,-zbkb,-zbkc,-zbkx,-zbs,-zdinx,-zfh,-zfhmin,-zfinx,-zhinx,-zhinxmin,-zicbom,-zicbop,-zicboz,-zihintpause,-zk,-zkn,-zknd,-zkne,-zknh,-zkr,-zks,-zksed,-zksh,-zkt,-zmmul,-zve32f,-zve32x,-zve64d,-zve64f,-zve64x,-zvl1024b,-zvl128b,-zvl16384b,-zvl2048b,-zvl256b,-zvl32768b,-zvl32b,-zvl4096b,-zvl512b,-zvl64b,-zvl65536b,-zvl8192b" }
+  attributes #1 = { nocallback nofree nosync nounwind speculatable willreturn memory(none) }
+  
+  !llvm.dbg.cu = !{!2}
+  !llvm.module.flags = !{!21, !22, !23, !24, !25, !26}
+  !llvm.ident = !{!27}
+  
+  !0 = !DIGlobalVariableExpression(var: !1, expr: !DIExpression())
+  !1 = distinct !DIGlobalVariable(name: "g_a", scope: !2, file: !3, line: 1, type: !7, isLocal: false, isDefinition: true)
+  !2 = distinct !DICompileUnit(language: DW_LANG_C11, file: !3, producer: "clang version 16.0.0 (git@github.com:pranav-mallela/llvm-cse583.git 25eac4a017d7281591c86020790c695d7b2b931d)", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug, globals: !4, splitDebugInlining: false, nameTableKind: None)
+  !3 = !DIFile(filename: "../samples/cubic.c", directory: "/home/pmallela/CSE583/llvm-cse583/build", checksumkind: CSK_MD5, checksum: "02a9cf6b49c81ee6cb6f3e51f6fc1568")
+  !4 = !{!0, !5, !9, !11, !13, !15, !17, !19}
+  !5 = !DIGlobalVariableExpression(var: !6, expr: !DIExpression())
+  !6 = distinct !DIGlobalVariable(name: "g_b", scope: !2, file: !3, line: 2, type: !7, isLocal: false, isDefinition: true)
+  !7 = !DIDerivedType(tag: DW_TAG_volatile_type, baseType: !8)
+  !8 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+  !9 = !DIGlobalVariableExpression(var: !10, expr: !DIExpression())
+  !10 = distinct !DIGlobalVariable(name: "g_c", scope: !2, file: !3, line: 3, type: !7, isLocal: false, isDefinition: true)
+  !11 = !DIGlobalVariableExpression(var: !12, expr: !DIExpression())
+  !12 = distinct !DIGlobalVariable(name: "g_d", scope: !2, file: !3, line: 4, type: !7, isLocal: false, isDefinition: true)
+  !13 = !DIGlobalVariableExpression(var: !14, expr: !DIExpression())
+  !14 = distinct !DIGlobalVariable(name: "sink_solutions", scope: !2, file: !3, line: 6, type: !7, isLocal: false, isDefinition: true)
+  !15 = !DIGlobalVariableExpression(var: !16, expr: !DIExpression())
+  !16 = distinct !DIGlobalVariable(name: "sink_x0", scope: !2, file: !3, line: 7, type: !7, isLocal: false, isDefinition: true)
+  !17 = !DIGlobalVariableExpression(var: !18, expr: !DIExpression())
+  !18 = distinct !DIGlobalVariable(name: "sink_x1", scope: !2, file: !3, line: 8, type: !7, isLocal: false, isDefinition: true)
+  !19 = !DIGlobalVariableExpression(var: !20, expr: !DIExpression())
+  !20 = distinct !DIGlobalVariable(name: "sink_x2", scope: !2, file: !3, line: 9, type: !7, isLocal: false, isDefinition: true)
+  !21 = !{i32 7, !"Dwarf Version", i32 5}
+  !22 = !{i32 2, !"Debug Info Version", i32 3}
+  !23 = !{i32 1, !"wchar_size", i32 4}
+  !24 = !{i32 1, !"target-abi", !"lp64"}
+  !25 = !{i32 7, !"frame-pointer", i32 2}
+  !26 = !{i32 1, !"SmallDataLimit", i32 8}
+  !27 = !{!"clang version 16.0.0 (git@github.com:pranav-mallela/llvm-cse583.git 25eac4a017d7281591c86020790c695d7b2b931d)"}
+  !28 = distinct !DISubprogram(name: "SolveCubicInt", scope: !3, file: !3, line: 12, type: !29, scopeLine: 13, flags: DIFlagPrototyped, spFlags: DISPFlagDefinition, unit: !2, retainedNodes: !32)
+  !29 = !DISubroutineType(types: !30)
+  !30 = !{null, !8, !8, !8, !8, !31, !31}
+  !31 = !DIDerivedType(tag: DW_TAG_pointer_type, baseType: !8, size: 64)
+  !32 = !{}
+  !33 = !DILocalVariable(name: "a", arg: 1, scope: !28, file: !3, line: 12, type: !8)
+  !34 = !DILocation(line: 12, column: 24, scope: !28)
+  !35 = !DILocalVariable(name: "b", arg: 2, scope: !28, file: !3, line: 12, type: !8)
+  !36 = !DILocation(line: 12, column: 31, scope: !28)
+  !37 = !DILocalVariable(name: "c", arg: 3, scope: !28, file: !3, line: 12, type: !8)
+  !38 = !DILocation(line: 12, column: 38, scope: !28)
+  !39 = !DILocalVariable(name: "d", arg: 4, scope: !28, file: !3, line: 12, type: !8)
+  !40 = !DILocation(line: 12, column: 45, scope: !28)
+  !41 = !DILocalVariable(name: "solutions", arg: 5, scope: !28, file: !3, line: 12, type: !31)
+  !42 = !DILocation(line: 12, column: 53, scope: !28)
+  !43 = !DILocalVariable(name: "x", arg: 6, scope: !28, file: !3, line: 12, type: !31)
+  !44 = !DILocation(line: 12, column: 69, scope: !28)
+  !45 = !DILocalVariable(name: "count", scope: !28, file: !3, line: 14, type: !8)
+  !46 = !DILocation(line: 14, column: 9, scope: !28)
+  !47 = !DILocalVariable(name: "r", scope: !28, file: !3, line: 15, type: !8)
+  !48 = !DILocation(line: 15, column: 9, scope: !28)
+  !49 = !DILocation(line: 17, column: 12, scope: !50)
+  !50 = distinct !DILexicalBlock(scope: !28, file: !3, line: 17, column: 5)
+  !51 = !DILocation(line: 17, column: 10, scope: !50)
+  !52 = !DILocation(line: 17, column: 19, scope: !53)
+  !53 = distinct !DILexicalBlock(scope: !50, file: !3, line: 17, column: 5)
+  !54 = !DILocation(line: 17, column: 21, scope: !53)
+  !55 = !DILocation(line: 17, column: 5, scope: !50)
+  !56 = !DILocalVariable(name: "val", scope: !57, file: !3, line: 18, type: !8)
+  !57 = distinct !DILexicalBlock(scope: !53, file: !3, line: 17, column: 33)
+  !58 = !DILocation(line: 18, column: 13, scope: !57)
+  !59 = !DILocation(line: 18, column: 19, scope: !57)
+  !60 = !DILocation(line: 18, column: 23, scope: !57)
+  !61 = !DILocation(line: 18, column: 21, scope: !57)
+  !62 = !DILocation(line: 18, column: 27, scope: !57)
+  !63 = !DILocation(line: 18, column: 25, scope: !57)
+  !64 = !DILocation(line: 18, column: 31, scope: !57)
+  !65 = !DILocation(line: 18, column: 29, scope: !57)
+  !66 = !DILocation(line: 18, column: 35, scope: !57)
+  !67 = !DILocation(line: 18, column: 39, scope: !57)
+  !68 = !DILocation(line: 18, column: 37, scope: !57)
+  !69 = !DILocation(line: 18, column: 43, scope: !57)
+  !70 = !DILocation(line: 18, column: 41, scope: !57)
+  !71 = !DILocation(line: 18, column: 33, scope: !57)
+  !72 = !DILocation(line: 18, column: 47, scope: !57)
+  !73 = !DILocation(line: 18, column: 51, scope: !57)
+  !74 = !DILocation(line: 18, column: 49, scope: !57)
+  !75 = !DILocation(line: 18, column: 45, scope: !57)
+  !76 = !DILocation(line: 18, column: 55, scope: !57)
+  !77 = !DILocation(line: 18, column: 53, scope: !57)
+  !78 = !DILocation(line: 19, column: 13, scope: !79)
+  !79 = distinct !DILexicalBlock(scope: !57, file: !3, line: 19, column: 13)
+  !80 = !DILocation(line: 19, column: 17, scope: !79)
+  !81 = !DILocation(line: 19, column: 13, scope: !57)
+  !82 = !DILocation(line: 20, column: 17, scope: !83)
+  !83 = distinct !DILexicalBlock(scope: !84, file: !3, line: 20, column: 17)
+  !84 = distinct !DILexicalBlock(scope: !79, file: !3, line: 19, column: 23)
+  !85 = !DILocation(line: 20, column: 23, scope: !83)
+  !86 = !DILocation(line: 20, column: 17, scope: !84)
+  !87 = !DILocation(line: 21, column: 28, scope: !88)
+  !88 = distinct !DILexicalBlock(scope: !83, file: !3, line: 20, column: 28)
+  !89 = !DILocation(line: 21, column: 17, scope: !88)
+  !90 = !DILocation(line: 21, column: 19, scope: !88)
+  !91 = !DILocation(line: 21, column: 26, scope: !88)
+  !92 = !DILocation(line: 22, column: 13, scope: !88)
+  !93 = !DILocation(line: 23, column: 18, scope: !84)
+  !94 = !DILocation(line: 24, column: 9, scope: !84)
+  !95 = !DILocation(line: 25, column: 5, scope: !57)
+  !96 = !DILocation(line: 17, column: 29, scope: !53)
+  !97 = !DILocation(line: 17, column: 5, scope: !53)
+  !98 = distinct !{!98, !55, !99, !100}
+  !99 = !DILocation(line: 25, column: 5, scope: !50)
+  !100 = !{!"llvm.loop.mustprogress"}
+  !101 = !DILocation(line: 27, column: 18, scope: !28)
+  !102 = !DILocation(line: 27, column: 6, scope: !28)
+  !103 = !DILocation(line: 27, column: 16, scope: !28)
+  !104 = !DILocation(line: 28, column: 5, scope: !28)
+  !105 = !DILocation(line: 28, column: 12, scope: !28)
+  !106 = !DILocation(line: 28, column: 18, scope: !28)
+  !107 = !DILocation(line: 29, column: 9, scope: !108)
+  !108 = distinct !DILexicalBlock(scope: !28, file: !3, line: 28, column: 23)
+  !109 = !DILocation(line: 29, column: 11, scope: !108)
+  !110 = !DILocation(line: 29, column: 18, scope: !108)
+  !111 = !DILocation(line: 30, column: 14, scope: !108)
+  !112 = distinct !{!112, !104, !113, !100}
+  !113 = !DILocation(line: 31, column: 5, scope: !28)
+  !114 = !DILocation(line: 32, column: 1, scope: !28)
+  !115 = distinct !DISubprogram(name: "main", scope: !3, file: !3, line: 34, type: !116, scopeLine: 35, flags: DIFlagPrototyped, spFlags: DISPFlagDefinition, unit: !2, retainedNodes: !32)
+  !116 = !DISubroutineType(types: !117)
+  !117 = !{!8}
+  !118 = !DILocalVariable(name: "x", scope: !115, file: !3, line: 36, type: !119)
+  !119 = !DICompositeType(tag: DW_TAG_array_type, baseType: !8, size: 96, elements: !120)
+  !120 = !{!121}
+  !121 = !DISubrange(count: 3)
+  !122 = !DILocation(line: 36, column: 9, scope: !115)
+  !123 = !DILocalVariable(name: "solutions", scope: !115, file: !3, line: 37, type: !8)
+  !124 = !DILocation(line: 37, column: 9, scope: !115)
+  !125 = !DILocation(line: 39, column: 19, scope: !115)
+  !126 = !DILocation(line: 39, column: 24, scope: !115)
+  !127 = !DILocation(line: 39, column: 29, scope: !115)
+  !128 = !DILocation(line: 39, column: 34, scope: !115)
+  !129 = !DILocation(line: 39, column: 51, scope: !115)
+  !130 = !DILocation(line: 39, column: 5, scope: !115)
+  !131 = !DILocation(line: 41, column: 22, scope: !115)
+  !132 = !DILocation(line: 41, column: 20, scope: !115)
+  !133 = !DILocation(line: 42, column: 15, scope: !115)
+  !134 = !DILocation(line: 42, column: 13, scope: !115)
+  !135 = !DILocation(line: 43, column: 15, scope: !115)
+  !136 = !DILocation(line: 43, column: 13, scope: !115)
+  !137 = !DILocation(line: 44, column: 15, scope: !115)
+  !138 = !DILocation(line: 44, column: 13, scope: !115)
+  !139 = !DILocation(line: 46, column: 5, scope: !115)
+
+...
+---
+name:            SolveCubicInt
+alignment:       2
+exposesReturnsTwice: false
+legalized:       false
+regBankSelected: false
+selected:        false
+failedISel:      false
+tracksRegLiveness: true
+hasWinCFI:       false
+callsEHReturn:   false
+callsUnwindInit: false
+hasEHCatchret:   false
+hasEHScopes:     false
+hasEHFunclets:   false
+debugInstrRef:   false
+failsVerification: false
+tracksDebugUserValues: true
+registers:       []
+liveins:
+  - { reg: '$x10', virtual-reg: '' }
+  - { reg: '$x11', virtual-reg: '' }
+  - { reg: '$x12', virtual-reg: '' }
+  - { reg: '$x13', virtual-reg: '' }
+  - { reg: '$x14', virtual-reg: '' }
+  - { reg: '$x15', virtual-reg: '' }
+frameInfo:
+  isFrameAddressTaken: false
+  isReturnAddressTaken: false
+  hasStackMap:     false
+  hasPatchPoint:   false
+  stackSize:       0
+  offsetAdjustment: 0
+  maxAlignment:    8
+  adjustsStack:    false
+  hasCalls:        false
+  stackProtector:  ''
+  functionContext: ''
+  maxCallFrameSize: 4294967295
+  cvBytesOfCalleeSavedRegisters: 0
+  hasOpaqueSPAdjustment: false
+  hasVAStart:      false
+  hasMustTailInVarArgFunc: false
+  hasTailCall:     false
+  localFrameSize:  44
+  savePoint:       ''
+  restorePoint:    ''
+fixedStack:      []
+stack:
+  - { id: 0, name: a.addr, type: default, offset: 0, size: 4, alignment: 4, 
+      stack-id: default, callee-saved-register: '', callee-saved-restored: true, 
+      local-offset: -4, debug-info-variable: '!33', debug-info-expression: '!DIExpression()', 
+      debug-info-location: '!34' }
+  - { id: 1, name: b.addr, type: default, offset: 0, size: 4, alignment: 4, 
+      stack-id: default, callee-saved-register: '', callee-saved-restored: true, 
+      local-offset: -8, debug-info-variable: '!35', debug-info-expression: '!DIExpression()', 
+      debug-info-location: '!36' }
+  - { id: 2, name: c.addr, type: default, offset: 0, size: 4, alignment: 4, 
+      stack-id: default, callee-saved-register: '', callee-saved-restored: true, 
+      local-offset: -12, debug-info-variable: '!37', debug-info-expression: '!DIExpression()', 
+      debug-info-location: '!38' }
+  - { id: 3, name: d.addr, type: default, offset: 0, size: 4, alignment: 4, 
+      stack-id: default, callee-saved-register: '', callee-saved-restored: true, 
+      local-offset: -16, debug-info-variable: '!39', debug-info-expression: '!DIExpression()', 
+      debug-info-location: '!40' }
+  - { id: 4, name: solutions.addr, type: default, offset: 0, size: 8, alignment: 8, 
+      stack-id: default, callee-saved-register: '', callee-saved-restored: true, 
+      local-offset: -24, debug-info-variable: '!41', debug-info-expression: '!DIExpression()', 
+      debug-info-location: '!42' }
+  - { id: 5, name: x.addr, type: default, offset: 0, size: 8, alignment: 8, 
+      stack-id: default, callee-saved-register: '', callee-saved-restored: true, 
+      local-offset: -32, debug-info-variable: '!43', debug-info-expression: '!DIExpression()', 
+      debug-info-location: '!44' }
+  - { id: 6, name: count, type: default, offset: 0, size: 4, alignment: 4, 
+      stack-id: default, callee-saved-register: '', callee-saved-restored: true, 
+      local-offset: -36, debug-info-variable: '!45', debug-info-expression: '!DIExpression()', 
+      debug-info-location: '!46' }
+  - { id: 7, name: r, type: default, offset: 0, size: 4, alignment: 4, 
+      stack-id: default, callee-saved-register: '', callee-saved-restored: true, 
+      local-offset: -40, debug-info-variable: '!47', debug-info-expression: '!DIExpression()', 
+      debug-info-location: '!48' }
+  - { id: 8, name: val, type: default, offset: 0, size: 4, alignment: 4, 
+      stack-id: default, callee-saved-register: '', callee-saved-restored: true, 
+      local-offset: -44, debug-info-variable: '!56', debug-info-expression: '!DIExpression()', 
+      debug-info-location: '!58' }
+callSites:       []
+debugValueSubstitutions: []
+constants:       []
+machineFunctionInfo:
+  varArgsFrameIndex: 0
+  varArgsSaveSize: 0
+body:             |
+  bb.0.entry:
+    successors: %bb.1(0x80000000)
+    liveins: $x10, $x11, $x12, $x13, $x14, $x15
+  
+    SW killed renamable $x10, %stack.0.a.addr, 0 :: (store (s32) into %ir.a.addr)
+    SW killed renamable $x11, %stack.1.b.addr, 0 :: (store (s32) into %ir.b.addr)
+    SW killed renamable $x12, %stack.2.c.addr, 0 :: (store (s32) into %ir.c.addr)
+    SW killed renamable $x13, %stack.3.d.addr, 0 :: (store (s32) into %ir.d.addr)
+    SD killed renamable $x14, %stack.4.solutions.addr, 0 :: (store (s64) into %ir.solutions.addr)
+    SD killed renamable $x15, %stack.5.x.addr, 0 :: (store (s64) into %ir.x.addr)
+    SW $x0, %stack.6.count, 0, debug-location !46 :: (store (s32) into %ir.count)
+    renamable $x10 = ADDI $x0, -20
+    SW killed renamable $x10, %stack.7.r, 0, debug-location !49 :: (store (s32) into %ir.r)
+    PseudoBR %bb.1, debug-location !51
+  
+  bb.1.for.cond:
+    successors: %bb.2(0x40000000), %bb.8(0x40000000)
+  
+    renamable $x10 = LW %stack.7.r, 0, debug-location !52 :: (dereferenceable load (s32) from %ir.r)
+    renamable $x11 = ADDI $x0, 20
+    BLT killed renamable $x11, killed renamable $x10, %bb.8, debug-location !55
+    PseudoBR %bb.2, debug-location !55
+  
+  bb.2.for.body:
+    successors: %bb.3(0x40000000), %bb.6(0x40000000)
+  
+    renamable $x10 = LW %stack.0.a.addr, 0, debug-location !59 :: (dereferenceable load (s32) from %ir.a.addr)
+    renamable $x11 = LW %stack.7.r, 0, debug-location !60 :: (dereferenceable load (s32) from %ir.r)
+    renamable $x10 = MULW killed renamable $x10, renamable $x11, debug-location !61
+    renamable $x12 = MULW renamable $x11, renamable $x11, debug-location !63
+    renamable $x10 = MULW killed renamable $x10, killed renamable $x12, debug-location !65
+    renamable $x12 = LW %stack.1.b.addr, 0, debug-location !66 :: (dereferenceable load (s32) from %ir.b.addr)
+    renamable $x12 = MULW killed renamable $x12, renamable $x11, debug-location !68
+    renamable $x12 = MULW killed renamable $x12, renamable $x11, debug-location !70
+    renamable $x10 = ADDW killed renamable $x10, killed renamable $x12, debug-location !71
+    renamable $x12 = LW %stack.2.c.addr, 0, debug-location !72 :: (dereferenceable load (s32) from %ir.c.addr)
+    renamable $x11 = MULW killed renamable $x12, killed renamable $x11, debug-location !74
+    renamable $x12 = LW %stack.3.d.addr, 0, debug-location !76 :: (dereferenceable load (s32) from %ir.d.addr)
+    renamable $x11 = ADDW killed renamable $x11, killed renamable $x12, debug-location !75
+    renamable $x10 = ADDW killed renamable $x10, killed renamable $x11, debug-location !77
+    SW killed renamable $x10, %stack.8.val, 0, debug-location !58 :: (store (s32) into %ir.val)
+    renamable $x10 = LW %stack.8.val, 0, debug-location !78 :: (dereferenceable load (s32) from %ir.val)
+    BNE killed renamable $x10, $x0, %bb.6, debug-location !81
+    PseudoBR %bb.3, debug-location !81
+  
+  bb.3.if.then:
+    successors: %bb.4(0x40000000), %bb.5(0x40000000)
+  
+    renamable $x10 = LW %stack.6.count, 0, debug-location !82 :: (dereferenceable load (s32) from %ir.count)
+    renamable $x11 = ADDI $x0, 2
+    BLT killed renamable $x11, killed renamable $x10, %bb.5, debug-location !86
+    PseudoBR %bb.4, debug-location !86
+  
+  bb.4.if.then10:
+    successors: %bb.5(0x80000000)
+  
+    renamable $x10 = LW %stack.7.r, 0, debug-location !87 :: (dereferenceable load (s32) from %ir.r)
+    renamable $x11 = LD %stack.5.x.addr, 0, debug-location !89 :: (dereferenceable load (s64) from %ir.x.addr)
+    renamable $x12 = LW %stack.6.count, 0, debug-location !90 :: (dereferenceable load (s32) from %ir.count)
+    renamable $x12 = SLLI killed renamable $x12, 2, debug-location !89
+    renamable $x11 = ADD killed renamable $x11, killed renamable $x12, debug-location !89
+    SW killed renamable $x10, killed renamable $x11, 0, debug-location !91 :: (store (s32) into %ir.arrayidx)
+    PseudoBR %bb.5, debug-location !92
+  
+  bb.5.if.end:
+    successors: %bb.6(0x80000000)
+  
+    renamable $x10 = LW %stack.6.count, 0, debug-location !93 :: (dereferenceable load (s32) from %ir.count)
+    renamable $x10 = ADDIW killed renamable $x10, 1, debug-location !93
+    SW killed renamable $x10, %stack.6.count, 0, debug-location !93 :: (store (s32) into %ir.count)
+    PseudoBR %bb.6, debug-location !94
+  
+  bb.6.if.end11:
+    successors: %bb.7(0x80000000)
+  
+    PseudoBR %bb.7, debug-location !95
+  
+  bb.7.for.inc:
+    successors: %bb.1(0x80000000)
+  
+    renamable $x10 = LW %stack.7.r, 0, debug-location !96 :: (dereferenceable load (s32) from %ir.r)
+    renamable $x10 = ADDIW killed renamable $x10, 1, debug-location !96
+    SW killed renamable $x10, %stack.7.r, 0, debug-location !96 :: (store (s32) into %ir.r)
+    PseudoBR %bb.1, debug-location !97
+  
+  bb.8.for.end:
+    successors: %bb.9(0x80000000)
+  
+    renamable $x10 = LW %stack.6.count, 0, debug-location !101 :: (dereferenceable load (s32) from %ir.count)
+    renamable $x11 = LD %stack.4.solutions.addr, 0, debug-location !102 :: (dereferenceable load (s64) from %ir.solutions.addr)
+    SW killed renamable $x10, killed renamable $x11, 0, debug-location !103 :: (store (s32) into %ir.19)
+    PseudoBR %bb.9, debug-location !104
+  
+  bb.9.while.cond:
+    successors: %bb.10(0x40000000), %bb.11(0x40000000)
+  
+    renamable $x10 = LW %stack.6.count, 0, debug-location !105 :: (dereferenceable load (s32) from %ir.count)
+    renamable $x11 = ADDI $x0, 2
+    BLT killed renamable $x11, killed renamable $x10, %bb.11, debug-location !104
+    PseudoBR %bb.10, debug-location !104
+  
+  bb.10.while.body:
+    successors: %bb.9(0x80000000)
+  
+    renamable $x10 = LD %stack.5.x.addr, 0, debug-location !107 :: (dereferenceable load (s64) from %ir.x.addr)
+    renamable $x11 = LW %stack.6.count, 0, debug-location !109 :: (dereferenceable load (s32) from %ir.count)
+    renamable $x11 = SLLI killed renamable $x11, 2, debug-location !107
+    renamable $x10 = ADD killed renamable $x10, killed renamable $x11, debug-location !107
+    SW $x0, killed renamable $x10, 0, debug-location !110 :: (store (s32) into %ir.arrayidx15)
+    renamable $x10 = LW %stack.6.count, 0, debug-location !111 :: (dereferenceable load (s32) from %ir.count)
+    renamable $x10 = ADDIW killed renamable $x10, 1, debug-location !111
+    SW killed renamable $x10, %stack.6.count, 0, debug-location !111 :: (store (s32) into %ir.count)
+    PseudoBR %bb.9, debug-location !104
+  
+  bb.11.while.end:
+    PseudoRET debug-location !114
+
+...
+---
+name:            main
+alignment:       2
+exposesReturnsTwice: false
+legalized:       false
+regBankSelected: false
+selected:        false
+failedISel:      false
+tracksRegLiveness: true
+hasWinCFI:       false
+callsEHReturn:   false
+callsUnwindInit: false
+hasEHCatchret:   false
+hasEHScopes:     false
+hasEHFunclets:   false
+debugInstrRef:   false
+failsVerification: false
+tracksDebugUserValues: true
+registers:       []
+liveins:         []
+frameInfo:
+  isFrameAddressTaken: false
+  isReturnAddressTaken: false
+  hasStackMap:     false
+  hasPatchPoint:   false
+  stackSize:       0
+  offsetAdjustment: 0
+  maxAlignment:    4
+  adjustsStack:    false
+  hasCalls:        true
+  stackProtector:  ''
+  functionContext: ''
+  maxCallFrameSize: 4294967295
+  cvBytesOfCalleeSavedRegisters: 0
+  hasOpaqueSPAdjustment: false
+  hasVAStart:      false
+  hasMustTailInVarArgFunc: false
+  hasTailCall:     false
+  localFrameSize:  20
+  savePoint:       ''
+  restorePoint:    ''
+fixedStack:      []
+stack:
+  - { id: 0, name: retval, type: default, offset: 0, size: 4, alignment: 4, 
+      stack-id: default, callee-saved-register: '', callee-saved-restored: true, 
+      local-offset: -4, debug-info-variable: '', debug-info-expression: '', 
+      debug-info-location: '' }
+  - { id: 1, name: x, type: default, offset: 0, size: 12, alignment: 4, 
+      stack-id: default, callee-saved-register: '', callee-saved-restored: true, 
+      local-offset: -16, debug-info-variable: '!118', debug-info-expression: '!DIExpression()', 
+      debug-info-location: '!122' }
+  - { id: 2, name: solutions, type: default, offset: 0, size: 4, alignment: 4, 
+      stack-id: default, callee-saved-register: '', callee-saved-restored: true, 
+      local-offset: -20, debug-info-variable: '!123', debug-info-expression: '!DIExpression()', 
+      debug-info-location: '!124' }
+callSites:       []
+debugValueSubstitutions: []
+constants:       []
+machineFunctionInfo:
+  varArgsFrameIndex: 0
+  varArgsSaveSize: 0
+body:             |
+  bb.0.entry:
+    SW $x0, %stack.0.retval, 0 :: (store (s32) into %ir.retval)
+    renamable $x10 = LUI target-flags(riscv-hi) @g_a, debug-location !125
+    renamable $x10 = LW killed renamable $x10, target-flags(riscv-lo) @g_a, debug-location !125 :: (volatile dereferenceable load (s32) from @g_a)
+    renamable $x11 = LUI target-flags(riscv-hi) @g_b, debug-location !126
+    renamable $x11 = LW killed renamable $x11, target-flags(riscv-lo) @g_b, debug-location !126 :: (volatile dereferenceable load (s32) from @g_b)
+    renamable $x12 = LUI target-flags(riscv-hi) @g_c, debug-location !127
+    renamable $x12 = LW killed renamable $x12, target-flags(riscv-lo) @g_c, debug-location !127 :: (volatile dereferenceable load (s32) from @g_c)
+    renamable $x13 = LUI target-flags(riscv-hi) @g_d, debug-location !128
+    renamable $x13 = LW killed renamable $x13, target-flags(riscv-lo) @g_d, debug-location !128 :: (volatile dereferenceable load (s32) from @g_d)
+    ADJCALLSTACKDOWN 0, 0, implicit-def dead $x2, implicit $x2, debug-location !130
+    $x14 = ADDI %stack.2.solutions, 0, debug-location !130
+    $x15 = ADDI %stack.1.x, 0, debug-location !130
+    PseudoCALL target-flags(riscv-call) @SolveCubicInt, csr_ilp32_lp64, implicit-def dead $x1, implicit $x10, implicit $x11, implicit $x12, implicit $x13, implicit killed $x14, implicit killed $x15, implicit-def $x2, debug-location !130
+    ADJCALLSTACKUP 0, 0, implicit-def dead $x2, implicit $x2, debug-location !130
+    renamable $x10 = LW %stack.2.solutions, 0, debug-location !131 :: (dereferenceable load (s32) from %ir.solutions)
+    renamable $x11 = LUI target-flags(riscv-hi) @sink_solutions, debug-location !132
+    SW killed renamable $x10, killed renamable $x11, target-flags(riscv-lo) @sink_solutions, debug-location !132 :: (volatile store (s32) into @sink_solutions)
+    renamable $x10 = LW %stack.1.x, 0, debug-location !133 :: (dereferenceable load (s32) from %ir.arrayidx)
+    renamable $x11 = LUI target-flags(riscv-hi) @sink_x0, debug-location !134
+    SW killed renamable $x10, killed renamable $x11, target-flags(riscv-lo) @sink_x0, debug-location !134 :: (volatile store (s32) into @sink_x0)
+    renamable $x10 = LW %stack.1.x, 4, debug-location !135 :: (dereferenceable load (s32) from %ir.arrayidx1)
+    renamable $x11 = LUI target-flags(riscv-hi) @sink_x1, debug-location !136
+    SW killed renamable $x10, killed renamable $x11, target-flags(riscv-lo) @sink_x1, debug-location !136 :: (volatile store (s32) into @sink_x1)
+    renamable $x10 = LW %stack.1.x, 8, debug-location !137 :: (dereferenceable load (s32) from %ir.arrayidx2)
+    renamable $x11 = LUI target-flags(riscv-hi) @sink_x2, debug-location !138
+    SW killed renamable $x10, killed renamable $x11, target-flags(riscv-lo) @sink_x2, debug-location !138 :: (volatile store (s32) into @sink_x2)
+    $x10 = COPY $x0, debug-location !139
+    PseudoRET implicit $x10, debug-location !139
+
+...

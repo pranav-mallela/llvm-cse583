@@ -82,7 +82,7 @@ float BECReliabilityModule::getUniqueBitIDCountNormalized(unsigned Line, unsigne
   // Look up all keys that have the right line number using substring matching of the key
   unsigned totalLineValues = 0;
   unsigned totalUniqueIDs = 0;
-  for(unsigned col = 0; col < 20; col++) {
+  for(unsigned col = 0; col < 50; col++) {
     std::string Key = std::to_string(Line) + "," + std::to_string(col);
     auto It = ReliabilityMap.find(Key);
     if (It != ReliabilityMap.end()) {
@@ -99,8 +99,11 @@ float BECReliabilityModule::getUniqueBitIDCountNormalized(unsigned Line, unsigne
     }
   }
   float normalized_UniqueIDs = static_cast<float>(totalUniqueIDs) / static_cast<float>(totalLineValues);
-  llvm::errs() << "Found BEC data for Line: " << Line 
-                << "\n=> Normalized Unique IDs (0 - 1): " << normalized_UniqueIDs << "\n";
+  if (totalLineValues == 0) {
+    return -1;
+  }
+  llvm::errs() << "Found BEC data for Line: " << Line << "\n";
+
   return normalized_UniqueIDs;
 
   // const FIResTy &Entries = It->second;

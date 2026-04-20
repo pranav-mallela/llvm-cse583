@@ -3,87 +3,88 @@ source_filename = "../samples/experiment.c"
 target datalayout = "e-m:e-p:64:64-i64:64-i128:128-n32:64-S128"
 target triple = "riscv64"
 
+@x = dso_local global i32 12, align 4, !dbg !0
+@sink = dso_local global i32 0, align 4, !dbg !5
+
 ; Function Attrs: noinline nounwind optnone
-define dso_local signext i32 @experiment(i32 noundef signext %volatile_input) #0 !dbg !9 {
+define dso_local signext i32 @experiment(i32 noundef signext %input) #0 !dbg !16 {
 entry:
-  %volatile_input.addr = alloca i32, align 4
+  %input.addr = alloca i32, align 4
   %a = alloca i32, align 4
   %b = alloca i32, align 4
-  store i32 %volatile_input, ptr %volatile_input.addr, align 4
-  call void @llvm.dbg.declare(metadata ptr %volatile_input.addr, metadata !14, metadata !DIExpression()), !dbg !15
-  call void @llvm.dbg.declare(metadata ptr %a, metadata !16, metadata !DIExpression()), !dbg !17
-  %0 = load i32, ptr %volatile_input.addr, align 4, !dbg !18
-  %shr = ashr i32 %0, 2, !dbg !19
-  store i32 %shr, ptr %a, align 4, !dbg !17
-  call void @llvm.dbg.declare(metadata ptr %b, metadata !20, metadata !DIExpression()), !dbg !21
-  %1 = load i32, ptr %a, align 4, !dbg !22
-  %xor = xor i32 %1, 1, !dbg !23
-  store i32 %xor, ptr %b, align 4, !dbg !21
-  %2 = load i32, ptr %b, align 4, !dbg !24
-  %and = and i32 %2, 1, !dbg !25
-  ret i32 %and, !dbg !26
+  store i32 %input, ptr %input.addr, align 4
+  call void @llvm.dbg.declare(metadata ptr %input.addr, metadata !20, metadata !DIExpression()), !dbg !21
+  call void @llvm.dbg.declare(metadata ptr %a, metadata !22, metadata !DIExpression()), !dbg !23
+  %0 = load i32, ptr %input.addr, align 4, !dbg !24
+  %shr = ashr i32 %0, 2, !dbg !25
+  store i32 %shr, ptr %a, align 4, !dbg !23
+  call void @llvm.dbg.declare(metadata ptr %b, metadata !26, metadata !DIExpression()), !dbg !27
+  %1 = load i32, ptr %a, align 4, !dbg !28
+  %xor = xor i32 %1, 1, !dbg !29
+  store i32 %xor, ptr %b, align 4, !dbg !27
+  %2 = load i32, ptr %b, align 4, !dbg !30
+  %and = and i32 %2, 1, !dbg !31
+  ret i32 %and, !dbg !32
 }
 
 ; Function Attrs: nocallback nofree nosync nounwind speculatable willreturn memory(none)
 declare void @llvm.dbg.declare(metadata, metadata, metadata) #1
 
 ; Function Attrs: noinline nounwind optnone
-define dso_local signext i32 @main() #0 !dbg !27 {
+define dso_local signext i32 @main() #0 !dbg !33 {
 entry:
   %retval = alloca i32, align 4
-  %input = alloca i32, align 4
-  %result = alloca i32, align 4
   store i32 0, ptr %retval, align 4
-  call void @llvm.dbg.declare(metadata ptr %input, metadata !30, metadata !DIExpression()), !dbg !31
-  store i32 12, ptr %input, align 4, !dbg !31
-  call void @llvm.dbg.declare(metadata ptr %result, metadata !32, metadata !DIExpression()), !dbg !33
-  %0 = load i32, ptr %input, align 4, !dbg !34
-  %call = call signext i32 @experiment(i32 noundef signext %0), !dbg !35
-  store i32 %call, ptr %result, align 4, !dbg !33
-  ret i32 0, !dbg !36
+  %0 = load volatile i32, ptr @x, align 4, !dbg !36
+  %call = call signext i32 @experiment(i32 noundef signext %0), !dbg !37
+  store volatile i32 %call, ptr @sink, align 4, !dbg !38
+  ret i32 0, !dbg !39
 }
 
 attributes #0 = { noinline nounwind optnone "frame-pointer"="all" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="generic-rv64" "target-features"="+64bit,+a,+c,+m,+relax,-d,-e,-experimental-zawrs,-experimental-zca,-experimental-zcd,-experimental-zcf,-experimental-zihintntl,-experimental-ztso,-experimental-zvfh,-f,-h,-save-restore,-svinval,-svnapot,-svpbmt,-v,-xtheadvdot,-xventanacondops,-zba,-zbb,-zbc,-zbkb,-zbkc,-zbkx,-zbs,-zdinx,-zfh,-zfhmin,-zfinx,-zhinx,-zhinxmin,-zicbom,-zicbop,-zicboz,-zihintpause,-zk,-zkn,-zknd,-zkne,-zknh,-zkr,-zks,-zksed,-zksh,-zkt,-zmmul,-zve32f,-zve32x,-zve64d,-zve64f,-zve64x,-zvl1024b,-zvl128b,-zvl16384b,-zvl2048b,-zvl256b,-zvl32768b,-zvl32b,-zvl4096b,-zvl512b,-zvl64b,-zvl65536b,-zvl8192b" }
 attributes #1 = { nocallback nofree nosync nounwind speculatable willreturn memory(none) }
 
-!llvm.dbg.cu = !{!0}
-!llvm.module.flags = !{!2, !3, !4, !5, !6, !7}
-!llvm.ident = !{!8}
+!llvm.dbg.cu = !{!2}
+!llvm.module.flags = !{!9, !10, !11, !12, !13, !14}
+!llvm.ident = !{!15}
 
-!0 = distinct !DICompileUnit(language: DW_LANG_C11, file: !1, producer: "clang version 16.0.0 (git@github.com:pranav-mallela/llvm-cse583.git 6a4d8c9ae13c37491d9c074fc1d7848cf82c528b)", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug, splitDebugInlining: false, nameTableKind: None)
-!1 = !DIFile(filename: "../samples/experiment.c", directory: "/home/pmallela/CSE583/llvm-cse583/build", checksumkind: CSK_MD5, checksum: "d09dfdb3f88f6705d08ce5f2f1a813d1")
-!2 = !{i32 7, !"Dwarf Version", i32 5}
-!3 = !{i32 2, !"Debug Info Version", i32 3}
-!4 = !{i32 1, !"wchar_size", i32 4}
-!5 = !{i32 1, !"target-abi", !"lp64"}
-!6 = !{i32 7, !"frame-pointer", i32 2}
-!7 = !{i32 1, !"SmallDataLimit", i32 8}
-!8 = !{!"clang version 16.0.0 (git@github.com:pranav-mallela/llvm-cse583.git 6a4d8c9ae13c37491d9c074fc1d7848cf82c528b)"}
-!9 = distinct !DISubprogram(name: "experiment", scope: !1, file: !1, line: 2, type: !10, scopeLine: 2, flags: DIFlagPrototyped, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !13)
-!10 = !DISubroutineType(types: !11)
-!11 = !{!12, !12}
-!12 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
-!13 = !{}
-!14 = !DILocalVariable(name: "volatile_input", arg: 1, scope: !9, file: !1, line: 2, type: !12)
-!15 = !DILocation(line: 2, column: 20, scope: !9)
-!16 = !DILocalVariable(name: "a", scope: !9, file: !1, line: 4, type: !12)
-!17 = !DILocation(line: 4, column: 9, scope: !9)
-!18 = !DILocation(line: 4, column: 13, scope: !9)
-!19 = !DILocation(line: 4, column: 28, scope: !9)
-!20 = !DILocalVariable(name: "b", scope: !9, file: !1, line: 5, type: !12)
-!21 = !DILocation(line: 5, column: 9, scope: !9)
-!22 = !DILocation(line: 5, column: 13, scope: !9)
-!23 = !DILocation(line: 5, column: 15, scope: !9)
-!24 = !DILocation(line: 6, column: 12, scope: !9)
-!25 = !DILocation(line: 6, column: 14, scope: !9)
-!26 = !DILocation(line: 6, column: 5, scope: !9)
-!27 = distinct !DISubprogram(name: "main", scope: !1, file: !1, line: 9, type: !28, scopeLine: 9, spFlags: DISPFlagDefinition, unit: !0, retainedNodes: !13)
-!28 = !DISubroutineType(types: !29)
-!29 = !{!12}
-!30 = !DILocalVariable(name: "input", scope: !27, file: !1, line: 10, type: !12)
-!31 = !DILocation(line: 10, column: 9, scope: !27)
-!32 = !DILocalVariable(name: "result", scope: !27, file: !1, line: 11, type: !12)
-!33 = !DILocation(line: 11, column: 9, scope: !27)
-!34 = !DILocation(line: 11, column: 29, scope: !27)
-!35 = !DILocation(line: 11, column: 18, scope: !27)
-!36 = !DILocation(line: 12, column: 5, scope: !27)
+!0 = !DIGlobalVariableExpression(var: !1, expr: !DIExpression())
+!1 = distinct !DIGlobalVariable(name: "x", scope: !2, file: !3, line: 15, type: !7, isLocal: false, isDefinition: true)
+!2 = distinct !DICompileUnit(language: DW_LANG_C11, file: !3, producer: "clang version 16.0.0 (git@github.com:pranav-mallela/llvm-cse583.git 25eac4a017d7281591c86020790c695d7b2b931d)", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug, globals: !4, splitDebugInlining: false, nameTableKind: None)
+!3 = !DIFile(filename: "../samples/experiment.c", directory: "/home/pmallela/CSE583/llvm-cse583/build", checksumkind: CSK_MD5, checksum: "e225f77d4992d342d8aad35a7a4b96bc")
+!4 = !{!0, !5}
+!5 = !DIGlobalVariableExpression(var: !6, expr: !DIExpression())
+!6 = distinct !DIGlobalVariable(name: "sink", scope: !2, file: !3, line: 16, type: !7, isLocal: false, isDefinition: true)
+!7 = !DIDerivedType(tag: DW_TAG_volatile_type, baseType: !8)
+!8 = !DIBasicType(name: "int", size: 32, encoding: DW_ATE_signed)
+!9 = !{i32 7, !"Dwarf Version", i32 5}
+!10 = !{i32 2, !"Debug Info Version", i32 3}
+!11 = !{i32 1, !"wchar_size", i32 4}
+!12 = !{i32 1, !"target-abi", !"lp64"}
+!13 = !{i32 7, !"frame-pointer", i32 2}
+!14 = !{i32 1, !"SmallDataLimit", i32 8}
+!15 = !{!"clang version 16.0.0 (git@github.com:pranav-mallela/llvm-cse583.git 25eac4a017d7281591c86020790c695d7b2b931d)"}
+!16 = distinct !DISubprogram(name: "experiment", scope: !3, file: !3, line: 18, type: !17, scopeLine: 18, flags: DIFlagPrototyped, spFlags: DISPFlagDefinition, unit: !2, retainedNodes: !19)
+!17 = !DISubroutineType(types: !18)
+!18 = !{!8, !8}
+!19 = !{}
+!20 = !DILocalVariable(name: "input", arg: 1, scope: !16, file: !3, line: 18, type: !8)
+!21 = !DILocation(line: 18, column: 20, scope: !16)
+!22 = !DILocalVariable(name: "a", scope: !16, file: !3, line: 19, type: !8)
+!23 = !DILocation(line: 19, column: 9, scope: !16)
+!24 = !DILocation(line: 19, column: 13, scope: !16)
+!25 = !DILocation(line: 19, column: 19, scope: !16)
+!26 = !DILocalVariable(name: "b", scope: !16, file: !3, line: 20, type: !8)
+!27 = !DILocation(line: 20, column: 9, scope: !16)
+!28 = !DILocation(line: 20, column: 13, scope: !16)
+!29 = !DILocation(line: 20, column: 15, scope: !16)
+!30 = !DILocation(line: 21, column: 12, scope: !16)
+!31 = !DILocation(line: 21, column: 14, scope: !16)
+!32 = !DILocation(line: 21, column: 5, scope: !16)
+!33 = distinct !DISubprogram(name: "main", scope: !3, file: !3, line: 24, type: !34, scopeLine: 24, spFlags: DISPFlagDefinition, unit: !2, retainedNodes: !19)
+!34 = !DISubroutineType(types: !35)
+!35 = !{!8}
+!36 = !DILocation(line: 25, column: 23, scope: !33)
+!37 = !DILocation(line: 25, column: 12, scope: !33)
+!38 = !DILocation(line: 25, column: 10, scope: !33)
+!39 = !DILocation(line: 26, column: 5, scope: !33)
