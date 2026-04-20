@@ -69,27 +69,53 @@ bool BECReliabilityModule::loadMap() {
 }
 
 float BECReliabilityModule::getUniqueBitIDCountNormalized(unsigned Line, unsigned Col) const {
-  // Construct the key: "line,column"
-  std::string Key = std::to_string(Line) + "," + std::to_string(Col);
+  // // Construct the key: "line,column"
+  // std::string Key = std::to_string(Line) + "," + std::to_string(Col);
 
+  // Use only Line, since column information may not be reliable or available
+  std::string Key = std::to_string(Line) + ",0";
   
-  auto It = ReliabilityMap.find(Key);
-  if (It == ReliabilityMap.end())
-    return -1; // Indicate no data available for this operand
+  // auto It = ReliabilityMap.find(Key);
+  // if (It == ReliabilityMap.end())
+  //   return -1; // Indicate no data available for this line
 
-  const FIResTy &Entries = It->second;
-  if (Entries.empty())
-    return -1; // Indicate no data available for this operand
-
-  // Use a set to count unique fault indices across the register bits
-  std::set<uint32_t> UniqueIDs;
-  for (const auto &Pair : Entries) {
-    UniqueIDs.insert(Pair.second);
+  // Look up all keys that have the right line number using substring matching of the key
+  unsigned totalLineValues = 0;
+  unsigned totalUniqueIDs = 0;
+  for(unsigned col = 0; col < 20; col++) {
+    std::string Key = std::to_string(Line) + "," + std::to_string(col);
+    auto It = ReliabilityMap.find(Key);
+    if (It != ReliabilityMap.end()) {
+      const FIResTy &Entries = It->second;
+      if (!Entries.empty()) {
+        // Use a set to count unique fault indices across the register bits
+        std::set<uint32_t> UniqueIDs;
+        for (const auto &Pair : Entries) {
+          UniqueIDs.insert(Pair.second);
+        }
+        totalUniqueIDs += UniqueIDs.size();
+        totalLineValues += Entries.size();
+      }
+    }
   }
-  
-  unsigned totalValues = Entries.size();
+  float normalized_UniqueIDs = static_cast<float>(totalUniqueIDs) / static_cast<float>(totalLineValues);
+  llvm::errs() << "Found BEC data for Line: " << Line 
+                << "\n=> Normalized Unique IDs (0 - 1): " << normalized_UniqueIDs << "\n";
+  return normalized_UniqueIDs;
 
-  return static_cast<float>(UniqueIDs.size()) / static_cast<float>(totalValues);
+  // const FIResTy &Entries = It->second;
+  // if (Entries.empty())
+  //   return -1; // Indicate no data available for this operand
+
+  // // Use a set to count unique fault indices across the register bits
+  // std::set<uint32_t> UniqueIDs;
+  // for (const auto &Pair : Entries) {
+  //   UniqueIDs.insert(Pair.second);
+  // }
+  
+  // unsigned totalValues = Entries.size();
+
+  // return static_cast<float>(UniqueIDs.size()) / static_cast<float>(totalValues);
 }
 
 float BECReliabilityModule::getReliabilityFactor(unsigned Line, unsigned Col) const {

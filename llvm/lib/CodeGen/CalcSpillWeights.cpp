@@ -314,6 +314,7 @@ float VirtRegAuxInfo::weightCalcHelper(LiveInterval &LI, SlotIndex *Start,
       LastKnownBECWeight = BEC_Weight;
     }
     else{
+      errs() << "CalcSpillWeights: DebugLoc is not available for this instruction " << *MI;
       BEC_Weight = LastKnownBECWeight;
     }
     TotalWeight += BEC_Weight;

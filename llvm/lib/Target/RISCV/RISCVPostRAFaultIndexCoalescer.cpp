@@ -1673,10 +1673,10 @@ void RISCVPostRAFaultIndexCoalescer::dumpFIResMap(MachineFunction &MF) {
           }
           else {
             if(EC){
-              errs() << "EC Message: " << EC.message() << "\n";
+              dbgs() << "EC Message: " << EC.message() << "\n";
             }
             if(!DL){
-              errs() << "DebugLoc is not available for this instruction " << MI;
+              dbgs() << "PostRA: DebugLoc is not available for this instruction " << MI;
             }
           }
           // >>>

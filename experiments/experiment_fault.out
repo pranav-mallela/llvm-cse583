@@ -1,0 +1,67 @@
+
+~~~ Run details  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ >> json filename:          demos/BEC_Experiment/jsons/binary-details.json
+ >> run mode:               fault
+ >> Output directory Name:  demos/BEC_Experiment/outputs/
+ >> Threads:                1
+ >> fault model filename :  demos/BEC_Experiment/faultmodels/small-x86.txt
+ >> Start from checkpoint:  No
+ >> Max instructions:       10000
+ >> Stop on equivalence:    No
+ >> Time it:                No
+ >> Display disassembly:    Yes
+ >> Note: No patched instructions.
+WARNING: We are not checking the return value from set cpu model, because it errors on Tricore for some reason
+
+~~~ FAULTS TO EMULATE  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Fault: 20-20
+  Registers [FORCE FAULT]: RAX 
+    Opcode filter: ALL 
+	Lifespan: 0 
+	  XOR operation. 
+		0x00000001 0x00000002 0x00000004 0x00000008 0x00000010 0x00000020 0x00000040 0x00000080 0x00000100 0x00000200 0x00000400 0x00000800 0x00001000 0x00002000 0x00004000 0x00008000 0x00010000 0x00020000 0x00040000 0x00080000 0x00100000 0x00200000 0x00400000 0x00800000 0x01000000 0x02000000 0x04000000 0x08000000 0x10000000 0x20000000 0x40000000 0x80000000 
+ >> Writing register input #0 directly to register: RAX. Value: 0x0000000000000005
+
+~~~~ Running the program once to count the instructions ~~~~~~~~~~~~~~~~~~~~~~~~~~~
+ >> Total instructions run:   46
+ >> Time to run:              451627 ns 
+ >> Time per instruction:     9817 ns 
+
+~~~~ Running to store all the instructions~~~~~~~~~~
+ >> Total number of checkpoints created: 0 (requested: 0). 
+ >> Writing register input #0 directly to register: RAX. Value: 0x0000000000000005
+
+~~~~~~~~~~~~~~~~~~ Print Stats  ~~~~~~~~~~~~~~~~~~~~~~
+ >> Binary file under test:      demos/BEC_Experiment/bins/factorial.out
+ >> Register: RAX. Register Value: 0x5.
+
+ >> Start faults at address:     0x00000170
+ >> End faults at address:       0x000001bd
+
+ >> Printing usage of registers: 
+	(AX):	      12   		 
+	(CS):	       1   		 
+	(CX):	       8   		 
+	(DI):	       1   		 
+	(DX):	      16   		 
+	(EAX):	       5   		 
+	(ECX):	       7   		 
+	(EDX):	      11   		 
+	(ES):	      15   		 
+	(ESI):	      15   		 
+	(IP):	       1   		 
+	(RAX):	       7   		 
+	(RCX):	       1   		 
+	(RDI):	       1   		 
+	(RDX):	       5   		 
+	(RIP):	       1   		 
+	(RSI):	       1   		 
+	(RSP):	       3   		 
+	(SI):	      16   		 
+	(SP):	       3   		 
+Directory for results: demos/BEC_Experiment/outputs/
+Thread 0 created.
+WARNING: We are not checking the return value from set cpu model, because it errors on Tricore for some reason
+.20.
+Thread 0 rejoined.
+Finished.

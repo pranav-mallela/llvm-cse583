@@ -53,11 +53,11 @@ entry:
   store i32 0, ptr %retval, align 4
   call void @llvm.dbg.declare(metadata ptr %number, metadata !45, metadata !DIExpression()), !dbg !46
   store i32 5, ptr %number, align 4, !dbg !46
-  call void @llvm.dbg.declare(metadata ptr %result, metadata !47, metadata !DIExpression()), !dbg !48
-  %0 = load i32, ptr %number, align 4, !dbg !49
-  %call = call signext i32 @factorial(i32 noundef signext %0), !dbg !50
-  store i32 %call, ptr %result, align 4, !dbg !48
-  ret i32 0, !dbg !51
+  call void @llvm.dbg.declare(metadata ptr %result, metadata !47, metadata !DIExpression()), !dbg !49
+  %0 = load i32, ptr %number, align 4, !dbg !50
+  %call = call signext i32 @factorial(i32 noundef signext %0), !dbg !51
+  store volatile i32 %call, ptr %result, align 4, !dbg !49
+  ret i32 0, !dbg !52
 }
 
 attributes #0 = { noinline nounwind optnone "frame-pointer"="all" "no-trapping-math"="true" "stack-protector-buffer-size"="8" "target-cpu"="generic-rv64" "target-features"="+64bit,+a,+c,+m,+relax,-d,-e,-experimental-zawrs,-experimental-zca,-experimental-zcd,-experimental-zcf,-experimental-zihintntl,-experimental-ztso,-experimental-zvfh,-f,-h,-save-restore,-svinval,-svnapot,-svpbmt,-v,-xtheadvdot,-xventanacondops,-zba,-zbb,-zbc,-zbkb,-zbkc,-zbkx,-zbs,-zdinx,-zfh,-zfhmin,-zfinx,-zhinx,-zhinxmin,-zicbom,-zicbop,-zicboz,-zihintpause,-zk,-zkn,-zknd,-zkne,-zknh,-zkr,-zks,-zksed,-zksh,-zkt,-zmmul,-zve32f,-zve32x,-zve64d,-zve64f,-zve64x,-zvl1024b,-zvl128b,-zvl16384b,-zvl2048b,-zvl256b,-zvl32768b,-zvl32b,-zvl4096b,-zvl512b,-zvl64b,-zvl65536b,-zvl8192b" }
@@ -68,7 +68,7 @@ attributes #1 = { nocallback nofree nosync nounwind speculatable willreturn memo
 !llvm.ident = !{!8}
 
 !0 = distinct !DICompileUnit(language: DW_LANG_C11, file: !1, producer: "clang version 16.0.0 (git@github.com:pranav-mallela/llvm-cse583.git c76bee6c6385876daafb8d09b2785b5212555ca5)", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug, splitDebugInlining: false, nameTableKind: None)
-!1 = !DIFile(filename: "../samples/factorial.c", directory: "/home/pmallela/CSE583/llvm-cse583/build", checksumkind: CSK_MD5, checksum: "cf2330f5af87b96bb6927b4e4cfe76b8")
+!1 = !DIFile(filename: "../samples/factorial.c", directory: "/home/pmallela/CSE583/llvm-cse583/build", checksumkind: CSK_MD5, checksum: "31aae2b3054b8d0bcd2673688064325b")
 !2 = !{i32 7, !"Dwarf Version", i32 5}
 !3 = !{i32 2, !"Debug Info Version", i32 3}
 !4 = !{i32 1, !"wchar_size", i32 4}
@@ -114,8 +114,9 @@ attributes #1 = { nocallback nofree nosync nounwind speculatable willreturn memo
 !44 = !{!12}
 !45 = !DILocalVariable(name: "number", scope: !42, file: !1, line: 14, type: !12)
 !46 = !DILocation(line: 14, column: 7, scope: !42)
-!47 = !DILocalVariable(name: "result", scope: !42, file: !1, line: 15, type: !12)
-!48 = !DILocation(line: 15, column: 7, scope: !42)
-!49 = !DILocation(line: 15, column: 26, scope: !42)
-!50 = !DILocation(line: 15, column: 16, scope: !42)
-!51 = !DILocation(line: 16, column: 3, scope: !42)
+!47 = !DILocalVariable(name: "result", scope: !42, file: !1, line: 15, type: !48)
+!48 = !DIDerivedType(tag: DW_TAG_volatile_type, baseType: !12)
+!49 = !DILocation(line: 15, column: 16, scope: !42)
+!50 = !DILocation(line: 15, column: 35, scope: !42)
+!51 = !DILocation(line: 15, column: 25, scope: !42)
+!52 = !DILocation(line: 16, column: 3, scope: !42)

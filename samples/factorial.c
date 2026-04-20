@@ -11,7 +11,7 @@ int factorial(int n)
 
 int main()
 {
-  int number = 5; // Example input
-  int result = factorial(number);
+  int number=5;
+  volatile int result = factorial(number);
   return 0;
 }
