@@ -317,7 +317,12 @@ float VirtRegAuxInfo::weightCalcHelper(LiveInterval &LI, SlotIndex *Start,
       // dbgs() << "CalcSpillWeights: DebugLoc is not available for this instruction " << *MI;
       BEC_Weight = LastKnownBECWeight;
     }
-    TotalWeight += BEC_Weight;
+    if(TotalWeight - BEC_Weight < 0){
+      TotalWeight = 0.0f;
+    }
+    else{
+      TotalWeight -= BEC_Weight;
+    }
 
     // Ignore main function debug prints as main function is not loaded into BEC map
     if(mbb->getParent()->getName() == "main" || (Line == 0 && Col == 0)){

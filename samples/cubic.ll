@@ -169,7 +169,7 @@ attributes #1 = { nocallback nofree nosync nounwind speculatable willreturn memo
 
 !0 = !DIGlobalVariableExpression(var: !1, expr: !DIExpression())
 !1 = distinct !DIGlobalVariable(name: "g_a", scope: !2, file: !3, line: 1, type: !7, isLocal: false, isDefinition: true)
-!2 = distinct !DICompileUnit(language: DW_LANG_C11, file: !3, producer: "clang version 16.0.0 (git@github.com:pranav-mallela/llvm-cse583.git 25eac4a017d7281591c86020790c695d7b2b931d)", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug, globals: !4, splitDebugInlining: false, nameTableKind: None)
+!2 = distinct !DICompileUnit(language: DW_LANG_C11, file: !3, producer: "clang version 16.0.0 (git@github.com:pranav-mallela/llvm-cse583.git 538aaea3bc2f7c4d1cf336b68bd782edbccab061)", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug, globals: !4, splitDebugInlining: false, nameTableKind: None)
 !3 = !DIFile(filename: "../samples/cubic.c", directory: "/home/pmallela/CSE583/llvm-cse583/build", checksumkind: CSK_MD5, checksum: "02a9cf6b49c81ee6cb6f3e51f6fc1568")
 !4 = !{!0, !5, !9, !11, !13, !15, !17, !19}
 !5 = !DIGlobalVariableExpression(var: !6, expr: !DIExpression())
@@ -194,7 +194,7 @@ attributes #1 = { nocallback nofree nosync nounwind speculatable willreturn memo
 !24 = !{i32 1, !"target-abi", !"lp64"}
 !25 = !{i32 7, !"frame-pointer", i32 2}
 !26 = !{i32 1, !"SmallDataLimit", i32 8}
-!27 = !{!"clang version 16.0.0 (git@github.com:pranav-mallela/llvm-cse583.git 25eac4a017d7281591c86020790c695d7b2b931d)"}
+!27 = !{!"clang version 16.0.0 (git@github.com:pranav-mallela/llvm-cse583.git 538aaea3bc2f7c4d1cf336b68bd782edbccab061)"}
 !28 = distinct !DISubprogram(name: "SolveCubicInt", scope: !3, file: !3, line: 12, type: !29, scopeLine: 13, flags: DIFlagPrototyped, spFlags: DISPFlagDefinition, unit: !2, retainedNodes: !32)
 !29 = !DISubroutineType(types: !30)
 !30 = !{null, !8, !8, !8, !8, !31, !31}

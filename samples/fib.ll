@@ -122,7 +122,7 @@ attributes #1 = { nocallback nofree nosync nounwind speculatable willreturn memo
 
 !0 = !DIGlobalVariableExpression(var: !1, expr: !DIExpression())
 !1 = distinct !DIGlobalVariable(name: "input", scope: !2, file: !3, line: 1, type: !7, isLocal: false, isDefinition: true)
-!2 = distinct !DICompileUnit(language: DW_LANG_C11, file: !3, producer: "clang version 16.0.0 (git@github.com:pranav-mallela/llvm-cse583.git 25eac4a017d7281591c86020790c695d7b2b931d)", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug, globals: !4, splitDebugInlining: false, nameTableKind: None)
+!2 = distinct !DICompileUnit(language: DW_LANG_C11, file: !3, producer: "clang version 16.0.0 (git@github.com:pranav-mallela/llvm-cse583.git 538aaea3bc2f7c4d1cf336b68bd782edbccab061)", isOptimized: false, runtimeVersion: 0, emissionKind: FullDebug, globals: !4, splitDebugInlining: false, nameTableKind: None)
 !3 = !DIFile(filename: "../samples/fib.c", directory: "/home/pmallela/CSE583/llvm-cse583/build", checksumkind: CSK_MD5, checksum: "0691ae4a017a9ff6c7d3576304a5b02c")
 !4 = !{!0, !5}
 !5 = !DIGlobalVariableExpression(var: !6, expr: !DIExpression())
@@ -135,7 +135,7 @@ attributes #1 = { nocallback nofree nosync nounwind speculatable willreturn memo
 !12 = !{i32 1, !"target-abi", !"lp64"}
 !13 = !{i32 7, !"frame-pointer", i32 2}
 !14 = !{i32 1, !"SmallDataLimit", i32 8}
-!15 = !{!"clang version 16.0.0 (git@github.com:pranav-mallela/llvm-cse583.git 25eac4a017d7281591c86020790c695d7b2b931d)"}
+!15 = !{!"clang version 16.0.0 (git@github.com:pranav-mallela/llvm-cse583.git 538aaea3bc2f7c4d1cf336b68bd782edbccab061)"}
 !16 = distinct !DISubprogram(name: "fib", scope: !3, file: !3, line: 5, type: !17, scopeLine: 5, flags: DIFlagPrototyped, spFlags: DISPFlagDefinition, unit: !2, retainedNodes: !19)
 !17 = !DISubroutineType(types: !18)
 !18 = !{!8, !8}
